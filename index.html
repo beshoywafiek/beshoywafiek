@@ -64,10 +64,12 @@
   .stat p{color:var(--gray); font-size:14px; margin-top:4px;}
 
   .marquee{border-bottom:1px solid var(--line); overflow:hidden; padding:22px 0; background:var(--bg-panel);}
-  .marquee-track{display:flex; gap:52px; white-space:nowrap; width:max-content; animation:scroll 26s linear infinite;}
+  .marquee-track{display:flex; white-space:nowrap; width:max-content; animation:scroll 26s linear infinite;}
   @keyframes scroll{from{transform:translateX(0);} to{transform:translateX(-50%);}}
-  .marquee-track span{font-size:15px; color:var(--gray-dim); font-weight:600;}
-  .marquee-track span b{color:var(--gray); font-weight:700;}
+  .marquee-group{display:inline-flex; align-items:center; padding-inline-end:52px; font-size:15px; color:var(--gray-dim); font-weight:600;}
+  .marquee-group b{color:var(--gray); font-weight:700; margin-inline-end:14px;}
+  .marquee-group .name{color:var(--gray); margin-inline-end:14px;}
+  .marquee-group .dot{color:var(--orange); margin-inline-end:14px; font-weight:800;}
   @media (prefers-reduced-motion: reduce){.marquee-track{animation:none;}}
 
   section{padding:100px 0;}
@@ -124,8 +126,8 @@
   @media (max-width:560px){.steps{grid-template-columns:1fr;}}
 
   .cta{padding:0; border-bottom:1px solid var(--line); overflow:hidden;}
-  .cta-track{display:flex; gap:40px; white-space:nowrap; width:max-content; padding:34px 0; animation:scroll 20s linear infinite;}
-  .cta-track span{font-size:clamp(20px,3vw,32px); font-weight:800; color:var(--gray-dim);}
+  .cta-track{display:flex; white-space:nowrap; width:max-content; padding:34px 0; animation:scroll 20s linear infinite;}
+  .cta-track span{display:inline-flex; align-items:center; padding-inline-end:40px; font-size:clamp(20px,3vw,32px); font-weight:800; color:var(--gray-dim);}
   .cta-track span b{color:var(--white);}
   .cta-track span i{color:var(--orange); font-style:normal; margin-inline-start:14px;}
   @media (prefers-reduced-motion: reduce){.cta-track{animation:none;}}
@@ -165,12 +167,12 @@
       <span class="en-only">Cairo, Egypt · Graphic Designer</span>
     </div>
     <h1>
-      <span class="ar-only">تصميم <span class="grad-text">جريء</span> لعلامات تستاهل تتفكّر</span>
-      <span class="en-only"><span class="grad-text">Bold</span> design for brands worth remembering</span>
+      <span class="ar-only">أفكارك تستحق <span class="grad-text">تصميمات</span> تعبر عنها</span>
+      <span class="en-only">Your ideas deserve <span class="grad-text">design</span> that feels like them</span>
     </h1>
     <p>
-      <span class="ar-only">أنا بيشوي وفيق، بصمم هويات بصرية ومحتوى سوشيال ميديا للبراندات اللي عايزة تبان مختلفة في سوق مزدحم.</span>
-      <span class="en-only">I'm Beshoy Wafiek. I design brand identities and social media content for brands that want to stand out in a crowded market.</span>
+      <span class="ar-only">أنا بيشوي وفيق، مصمم جرافيك متخصص في بناء الهويات البصرية وتصميم محتوى السوشيال ميديا بشكل واضح، متناسق، وله هوية خاصة. بخبرة في العمل مع أسواق متعددة، مثل مصر والإمارات والسعودية وقطر والولايات المتحدة، وفي مجالات متنوعة، مما ساعدني على تطوير تصميمات تناسب طبيعة كل براند واحتياجاته وجمهوره المستهدف.</span>
+      <span class="en-only">I'm Bishoy Wafik, a graphic designer specializing in visual identities and social media design. I turn ideas into thoughtful, cohesive visuals with a clear sense of personality. I've worked across multiple markets including Egypt, the UAE, Saudi Arabia, Qatar, and the US, and across different industries, giving me the perspective to create work that fits each brand and speaks to its audience.</span>
     </p>
     <a href="#work" class="btn"><span class="ar-only">شوف أعمالي</span><span class="en-only">View My Work</span></a>
     <a href="#contact" class="btn-outline"><span class="ar-only">اطلب عرض سعر</span><span class="en-only">Get a Quote</span></a>
@@ -187,8 +189,8 @@
 
 <div class="marquee">
   <div class="marquee-track">
-    <span><b>KIN</b> · ELVA · Mountain View Club · Koma Agency · UE Developments · Capital Football Academy · STRIKE</span>
-    <span><b>KIN</b> · ELVA · Mountain View Club · Koma Agency · UE Developments · Capital Football Academy · STRIKE</span>
+    <span class="marquee-group"><b>KIN</b><span class="dot">•</span><span class="name">ELVA</span><span class="dot">•</span><span class="name">Mountain View Club</span><span class="dot">•</span><span class="name">Koma Agency</span><span class="dot">•</span><span class="name">UE Developments</span><span class="dot">•</span><span class="name">Capital Football Academy</span><span class="dot">•</span><span class="name">STRIKE</span></span>
+    <span class="marquee-group"><b>KIN</b><span class="dot">•</span><span class="name">ELVA</span><span class="dot">•</span><span class="name">Mountain View Club</span><span class="dot">•</span><span class="name">Koma Agency</span><span class="dot">•</span><span class="name">UE Developments</span><span class="dot">•</span><span class="name">Capital Football Academy</span><span class="dot">•</span><span class="name">STRIKE</span></span>
   </div>
 </div>
 
@@ -196,23 +198,23 @@
   <div class="wrap">
     <div class="section-head">
       <h2><span class="ar-only">الخدمات</span><span class="en-only">Services</span></h2>
-      <p><span class="ar-only">ثلاث خدمات أساسية، بمعيار تنفيذ واحد.</span><span class="en-only">Three core services, one standard of execution.</span></p>
+      <p><span class="ar-only">ثلاث خدمات أساسية. تصميم مدروس. تنفيذ متقن.</span><span class="en-only">Three core services. One consistent standard.</span></p>
     </div>
   </div>
   <div class="svc-grid">
     <div class="svc-card">
       <div class="svc-top"><h3><span class="ar-only">تصميم لوجو</span><span class="en-only">Logo Design</span></h3><span class="svc-arrow">←</span></div>
-      <p><span class="ar-only">لوجو مميز يعبر عن هوية علامتك، مع الملفات الجاهزة لكل الاستخدامات.</span><span class="en-only">A distinctive logo for your brand, with all files ready for every use case.</span></p>
+      <p><span class="ar-only">هوية بصرية تبدأ من لوجو واضح، مميز، وسهل تذكّره — مع الملفات النهائية الجاهزة للاستخدام.</span><span class="en-only">A distinctive logo that gives your brand a strong first impression, thoughtfully designed and delivered in all the formats you need.</span></p>
       <div class="svc-price">$150 <span class="ar-only">وما فوق</span><span class="en-only">and up</span></div>
     </div>
     <div class="svc-card">
       <div class="svc-top"><h3><span class="ar-only">هوية بصرية متكاملة</span><span class="en-only">Full Brand Identity</span></h3><span class="svc-arrow">←</span></div>
-      <p><span class="ar-only">هوية كاملة للشركات الناشئة: لوجو، ألوان، خطوط، ودليل استخدام.</span><span class="en-only">A complete identity for startups: logo, colors, type, and a usage guide.</span></p>
+      <p><span class="ar-only">هوية بصرية متكاملة تحدد شكل البراند وشخصيته.</span><span class="en-only">A complete visual system that gives your brand a recognizable look and feel — from logo, colors, and typography to the guidelines that bring it all together.</span></p>
       <div class="svc-price">$400 <span class="ar-only">وما فوق</span><span class="en-only">and up</span></div>
     </div>
     <div class="svc-card">
       <div class="svc-top"><h3><span class="ar-only">سوشيال ميديا</span><span class="en-only">Social Media</span></h3><span class="svc-arrow">←</span></div>
-      <p><span class="ar-only">قوالب وبوستات متسقة، بأسلوب يعكس هوية البراند على مدار الشهر.</span><span class="en-only">Consistent templates and posts that reflect your brand all month long.</span></p>
+      <p><span class="ar-only">تصميم محتوى يحافظ على شكل البراند متناسقًا، واضحًا، ومميزًا عبر كل منصات التواصل.</span><span class="en-only">Consistent, on-brand social content designed to keep your presence looking sharp, cohesive, and unmistakably yours.</span></p>
       <div class="svc-price">$50 <span class="ar-only">وما فوق</span><span class="en-only">and up</span></div>
     </div>
   </div>
@@ -356,15 +358,15 @@
 <section class="process" id="about">
   <div class="wrap">
     <div class="section-head">
-      <h2><span class="ar-only">طريقة الشغل</span><span class="en-only">How I Work</span></h2>
-      <p><span class="ar-only">مسار واضح من البداية للتسليم، من غير مفاجآت.</span><span class="en-only">A clear path from brief to delivery, no surprises.</span></p>
+      <h2><span class="ar-only">طريقة الشغل</span><span class="en-only">The Process</span></h2>
+      <p><span class="ar-only">من الفكرة الأولى إلى التصميم النهائي... بخطوات واضحة وعملية.</span><span class="en-only">From the first idea to the final files — clear, collaborative, and straightforward.</span></p>
     </div>
   </div>
   <div class="steps">
-    <div class="step"><div class="step-num">01</div><h3><span class="ar-only">الفهم</span><span class="en-only">Discovery</span></h3><p><span class="ar-only">بفهم براندك، جمهورك، والإحساس اللي عايز توصله.</span><span class="en-only">Understanding your brand, audience, and the feeling you want to leave.</span></p></div>
-    <div class="step"><div class="step-num">02</div><h3><span class="ar-only">الاتجاه الإبداعي</span><span class="en-only">Creative Direction</span></h3><p><span class="ar-only">مودبوردز ومراجع وأفكار أولية تتفق عليها قبل التنفيذ.</span><span class="en-only">Moodboards, references, and initial ideas we agree on first.</span></p></div>
-    <div class="step"><div class="step-num">03</div><h3><span class="ar-only">التصميم</span><span class="en-only">Design</span></h3><p><span class="ar-only">تنفيذ فعلي بمراجعات واضحة في كل مرحلة.</span><span class="en-only">Actual execution with clear reviews at every stage.</span></p></div>
-    <div class="step"><div class="step-num">04</div><h3><span class="ar-only">التسليم</span><span class="en-only">Delivery</span></h3><p><span class="ar-only">كل الملفات جاهزة بالمقاسات والصيغ اللي تحتاجها.</span><span class="en-only">All files ready in the sizes and formats you need.</span></p></div>
+    <div class="step"><div class="step-num">01</div><h3><span class="ar-only">الفهم</span><span class="en-only">Discovery</span></h3><p><span class="ar-only">فهم البراند، جمهوره، وأهدافه لبناء اتجاه مناسب له.</span><span class="en-only">Getting to know your brand, audience, goals, and what you want the design to say.</span></p></div>
+    <div class="step"><div class="step-num">02</div><h3><span class="ar-only">الاتجاه الإبداعي</span><span class="en-only">Creative Direction</span></h3><p><span class="ar-only">تحديد الاتجاه البصري من خلال المراجع، المودبوردز، والأفكار الأولية.</span><span class="en-only">Building the visual direction through references, moodboards, and initial ideas before the actual design begins.</span></p></div>
+    <div class="step"><div class="step-num">03</div><h3><span class="ar-only">التصميم</span><span class="en-only">Design</span></h3><p><span class="ar-only">تحويل الاتجاه المتفق عليه إلى تصميم متكامل، مع مراجعات واضحة في كل مرحلة.</span><span class="en-only">Turning the agreed direction into polished, purposeful design, with clear feedback and revisions along the way.</span></p></div>
+    <div class="step"><div class="step-num">04</div><h3><span class="ar-only">التسليم</span><span class="en-only">Delivery</span></h3><p><span class="ar-only">تجهيز وتسليم الملفات النهائية بالصيغ والمقاسات المناسبة للاستخدام.</span><span class="en-only">Final files, properly organized and ready to use in the formats and sizes your brand needs.</span></p></div>
   </div>
 </section>
 
@@ -379,8 +381,10 @@
 
 <section class="contact" id="contact">
   <div class="wrap">
-    <h2><span class="ar-only">يلا نتكلم عن مشروعك</span><span class="en-only">Let's talk about your project</span></h2>
-    <p><span class="ar-only">متاح للعمل الفريلانس والدوام الكامل. ابعتلي تفاصيل مشروعك وهرد عليك بأقرب وقت.</span><span class="en-only">Available for freelance and full-time work. Send me your project details and I'll get back to you soon.</span></p>
+    <h2><span class="ar-only">عندك مشروع؟</span><span class="en-only">Have something in mind?</span></h2>
+    <p><span class="ar-only">لو عندك فكرة، براند، أو محتوى محتاج تصميم، ابعتلي التفاصيل ونبدأ في تحويل فكرتك إلى حقيقة.</span><span class="en-only">Whether it's a new brand, a fresh visual identity, or social content that needs a little more personality... I'd love to hear about it.</span></p>
+    <p style="color:var(--gray-dim); font-size:14px; margin-top:-26px; margin-bottom:38px;"><span class="ar-only">(متاح للعمل الحر والدوام الكامل)</span><span class="en-only">(Available for freelance and full-time opportunities.)</span></p>
+    <a href="https://wa.me/201273874839" target="_blank" rel="noopener" class="btn" style="margin-bottom:32px; display:inline-block;"><span class="ar-only">تواصل معايا</span><span class="en-only">Get in Touch</span></a>
     <div class="contact-links">
       <a class="clink" href="https://wa.me/201273874839" target="_blank" rel="noopener"><span><span class="ar-only">واتساب</span><span class="en-only">WhatsApp</span></span><b>01273874839</b></a>
       <a class="clink" href="https://instagram.com/beshoy_wafiek" target="_blank" rel="noopener"><span><span class="ar-only">انستجرام</span><span class="en-only">Instagram</span></span><b>@beshoy_wafiek</b></a>
