@@ -13,7 +13,7 @@ ALL the site copy lives here, in one file. Edit, then run `python build.py`.
 """
 
 # ----------------------------------------------------------------- الأساسيات
-# بياناتك. غيرها هنا وهتتغير في الموقع كله.
+# بياناتك. غيّرها هنا وهتتغير في الموقع كله.
 SITE  = 'https://beshoywafiek.github.io/beshoywafiek/'
 WA    = 'https://wa.me/201273874839'          # رقم الواتساب
 MAIL  = 'beshoywafiek@gmail.com'
@@ -30,7 +30,7 @@ HERO_AR = ['أفكارك', 'تستحق <em>تصميم</em>', 'يعبّر عنه�
 HERO_EN = ['Ideas', 'deserve <em>design</em>', 'that speaks']
 
 HERO_INTRO = (
-    'بصمم هويات بصرية ومحتوى سوشيال ميديا لبراندات في مصر والخليج '
+    'بصمّم هويات بصرية ومحتوى سوشيال ميديا لبراندات في مصر والخليج '
     'والولايات المتحدة. كل مشروع نشرته، معروض هنا بالكامل.',
     'Brand identities and social content for brands across Egypt, the Gulf '
     'and the US. Every project I have published, shown here in full.')
@@ -65,7 +65,7 @@ ALL_NOTE = ('كل مشروع ليه صفحة لوحده، بالمقاس الل�
 
 # الشريط البرتقالي العريض
 BAND_KICKER = ('طريقة الشغل', 'How it works')
-BAND_LINE = ('كل مشروع بيبدأ بفهم البراند، وبينتهي بنطام بصري متماسك.',
+BAND_LINE = ('كل مشروع بيبدأ بفهم البراند، وبينتهي بنظام بصري متماسك.',
              'Every project starts with the brand, and ends with a visual '
              'system that holds.')
 
@@ -104,7 +104,7 @@ SERVICES = [
      '$180+', 'من 5 أيام', 'from 5 days',
      icons.LOGO),
     ('02', 'هوية بصرية متكاملة', 'Brand Identity',
-     'لوجو وألوان وخطوط ودليل هوية — نطام واحد يشتغل في كل مكان.',
+     'لوجو وألوان وخطوط ودليل هوية — نظام واحد يشتغل في كل مكان.',
      'Logo, colour, type and guidelines — one system that holds everywhere.',
      '$300+', 'من 10 أيام', 'from 10 days',
      icons.IDENTITY),
@@ -284,9 +284,9 @@ SERVICE_PAGES = {
         ('نسخة أبيض وأسود', 'A one-colour version'),
         ('ملف بقواعد الاستخدام', 'A sheet of usage rules'),
     ]),
-    '02': dict(slug='brand-identity', short=('نطام هوية كامل','A full identity system'), ask=1, cat='identity', inc=[
+    '02': dict(slug='brand-identity', short=('نظام هوية كامل','A full identity system'), ask=1, cat='identity', inc=[
         ('اللوجو بكل نسخه وملفاته', 'The logo, every version and format'),
-        ('نطام ألوان كامل بأكواده', 'A full colour system with codes'),
+        ('نظام ألوان كامل بأكواده', 'A full colour system with codes'),
         ('الخطوط ومقاساتها للعربي والإنجليزي', 'Typefaces and scale, Arabic and Latin'),
         ('عناصر بصرية وباترنز', 'Visual elements and patterns'),
         ('تطبيقات: كارت وبروشور وسوشيال', 'Applications: cards, print, social'),
@@ -382,7 +382,7 @@ PROOF = [
 # الأسئلة الشائعة
 # ===================================================================
 # دي أهم حاجة للظهور في ChatGPT وجوجل: سؤال واضح وإجابة كاملة
-# لوحدها. اكتبها بالطبط زي ما العميل هيسأل.
+# لوحدها. اكتبها بالظبط زي ما العميل هيسأل.
 FAQ_HEAD = ('أسئلة بتتسأل كتير', 'Questions I get a lot')
 FAQ = [
     ('تصميم اللوجو بكام؟', 'How much does a logo cost?',
@@ -409,9 +409,9 @@ FAQ = [
      'and the United States. We can work in Arabic or English, delivery is '
      'online, and payment can be bank transfer, PayPal or Wise.'),
 
-    ('بتسلم إيه بالطبط؟', 'What exactly do I receive?',
+    ('بتسلم إيه بالظبط؟', 'What exactly do I receive?',
      'بتستلم اللوجو بكل نسخه (أفقي ورأسي وأيقونة وأبيض وأسود) بصيغ '
-     'الفيكتور والصور، ونطام ألوان بأكواده، والخطوط ومقاساتها، ودليل هوية '
+     'الفيكتور والصور، ونظام ألوان بأكواده، والخطوط ومقاساتها، ودليل هوية '
      'PDF فيه قواعد الاستخدام. الملفات كلها ملكك بالكامل.',
      'You receive the logo in every version (horizontal, vertical, icon and '
      'one-colour) in both vector and raster formats, a colour system with '
