@@ -47,6 +47,6 @@ const where = p => p.evaluate(()=>{
  const w=await p.evaluate(()=>({cw:document.getElementById('heroBg').width, vw:innerWidth}));
  note(w.cw > 700, `تغيير العرض الحقيقي بيعيد البناء (الكانفس ${w.cw}px لعرض ${w.vw}px)`);
  await b.close();
- console.log(fails?fails+' FAILURES':'الكورة بتعوم من غير ما اللمس يأثر عليها'};
+ console.log(fails?fails+' FAILURES':'الكورة بتعوم من غير ما اللمس يأثر عليها');
  process.exit(fails?1:0);
 })();
