@@ -1,0 +1,11 @@
+{
+  "name": "beshoywafiek-site",
+  "private": true,
+  "description": "Bilingual AR/EN portfolio. The published site lives at the repo root (GitHub Pages serves it from there). Sources are in _source/.",
+  "scripts": {
+    "build": "python3 _source/build.py",
+    "serve": "python3 -m http.server 8099",
+    "test": "node _source/tests/check.js"
+  },
+  "devDependencies": { "playwright": "^1.47.0" }
+}

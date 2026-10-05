@@ -1,0 +1,12 @@
+# GitHub Pages serves this repo's ROOT as the live site.
+# These are build/source files — they belong in the repo, not on the website.
+# (_source/ is already skipped because its name starts with an underscore;
+#  it is listed here so the intent is explicit and survives a .nojekyll.)
+exclude:
+  - _source
+  - node_modules
+  - package.json
+  - package-lock.json
+  - CLAUDE.md
+  - HOW-TO-EDIT.md
+  - README.md
