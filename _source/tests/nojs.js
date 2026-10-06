@@ -3,7 +3,7 @@
    no-JS state for real seconds. */
 const { chromium } = require('playwright');
 (async()=>{
- const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome',args:['--no-sandbox']});
+ const b=await chromium.launch(require('./browser'));
  const ctx=await b.newContext({viewport:{width:1400,height:900},javaScriptEnabled:false});
  const p=await ctx.newPage();
  await p.route('**://mir-s3-cdn-cf.behance.net/**',r=>r.fulfill({status:200,contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==','base64')}));
@@ -24,6 +24,8 @@ const { chromium } = require('playwright');
  console.log('  عناصر مخفية بانتظار الجافاسكريبت:', r.revealsHidden, 'من', r.revealsTotal);
  console.log('  لينكات شغالة:', r.links);
  console.log('  اللغة:', r.lang);
- await p.screenshot({path:'shots/nojs.png',clip:{x:0,y:0,width:1400,height:900}});
+ // shots/ is gitignored, so a fresh clone does not have it
+ require('fs').mkdirSync(__dirname+'/shots',{recursive:true});
+ await p.screenshot({path:__dirname+'/shots/nojs.png',clip:{x:0,y:0,width:1400,height:900}});
  await b.close();
 })();

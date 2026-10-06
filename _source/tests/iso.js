@@ -11,7 +11,7 @@ const CASES = {
  'no hero at all'     : '.hero-fx,.hero-bgw,.hero-sheen,.hero-veil{display:none !important}',
 };
 (async()=>{
- const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome',args:['--no-sandbox']});
+ const b=await chromium.launch(require('./browser'));
  for(const [name,css] of Object.entries(CASES)){
   const ctx=await b.newContext({viewport:{width:1400,height:860},deviceScaleFactor:1});
   const p=await ctx.newPage();

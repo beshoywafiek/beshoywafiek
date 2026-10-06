@@ -3,7 +3,7 @@
 const { chromium } = require('playwright');
 const fs=require('fs'), path=require('path');
 (async()=>{
- const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome',args:['--no-sandbox']});
+ const b=await chromium.launch(require('./browser'));
  const p=await (await b.newContext()).newPage();
  /* Find the site, rather than assuming it is the working directory. This
     used to walk from '.', so running it from _source/tests/ found ZERO pages

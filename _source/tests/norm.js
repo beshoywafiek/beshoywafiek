@@ -14,7 +14,7 @@ const STROKE = 1.6;
 
 (async () => {
   const files = fs.readdirSync('/tmp/ic').filter(f => f.endsWith('.svg')).sort();
-  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
+  const b = await chromium.launch(require('./browser'));
   const p = await (await b.newContext()).newPage();
   await p.goto('about:blank');
   const out = {};

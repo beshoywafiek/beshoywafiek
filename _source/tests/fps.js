@@ -2,7 +2,7 @@
    scrolling is when a background like this bites, not idling. */
 const { chromium } = require('playwright');
 (async()=>{
- const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome',args:['--no-sandbox']});
+ const b=await chromium.launch(require('./browser'));
  for(const [name,w,h,cpu] of [['desktop',1400,860,1],['phone',390,844,4]]){
   const ctx=await b.newContext({viewport:{width:w,height:h},deviceScaleFactor:name==='phone'?2:1,isMobile:name==='phone',hasTouch:name==='phone'});
   const p=await ctx.newPage();

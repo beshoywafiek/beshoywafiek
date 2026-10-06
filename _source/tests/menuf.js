@@ -5,7 +5,7 @@ const { chromium } = require('playwright');
 const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==','base64');
 (async()=>{
  let fails=0;
- const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome',args:['--no-sandbox']});
+ const b=await chromium.launch(require('./browser'));
  for(const [name,w,h] of [['iphone-se',375,667],['iphone',390,844],['tall',414,915]]){
   for(const lang of ['ar','en']){
    const ctx=await b.newContext({viewport:{width:w,height:h},isMobile:true,hasTouch:true,locale:lang==='ar'?'ar-EG':'en-US'});

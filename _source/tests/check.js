@@ -15,7 +15,8 @@
      offer.js  the offer's memory: a dismissal and a reply are not the same
      feat.js   the channel button, the offer, the lead form
      det.js    the build is deterministic: same sources -> identical pages
-   Usage: node check.js      (the local server must be up on 8099) */
+   Usage: npm test, or node check.js from any directory
+          (the local server must be up on 8099) */
 const { spawn } = require('child_process');
 
 const GATES = ['test.js', 'clip.js', 'rtl.js', 'arrow.js', 'svl.js', 'nav.js', 'menuf.js', 'lens.js', 'audit.js', 'links.js', 'hp.js', 'bar.js', 'offer.js', 'feat.js', 'det.js'];
@@ -25,7 +26,9 @@ const GATES = ['test.js', 'clip.js', 'rtl.js', 'arrow.js', 'svl.js', 'nav.js', '
   for (const g of GATES) {
     process.stdout.write('\n──────── ' + g + ' ────────\n');
     const code = await new Promise(res => {
-      const p = spawn('node', [g], { stdio: ['ignore', 'pipe', 'pipe'] });
+      // cwd: the gates sit beside this file, so `npm test` from the repo root
+      // used to fail every one of them with "Cannot find module"
+      const p = spawn('node', [g], { cwd: __dirname, stdio: ['ignore', 'pipe', 'pipe'] });
       let tail = [];
       const keep = b => { tail = tail.concat(String(b).split('\n')).slice(-400); };
       p.stdout.on('data', keep); p.stderr.on('data', keep);

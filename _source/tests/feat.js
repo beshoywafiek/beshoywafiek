@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==','base64');
 let fail=0; const ok=(c,m)=>{if(!c)fail++;console.log((c?'  ok   ':'  FAIL ')+m);};
 (async()=>{
- const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome',args:['--no-sandbox']});
+ const b=await chromium.launch(require('./browser'));
  for(const [w,h,tag] of [[390,844,'phone'],[1512,900,'desktop']]){
   const ctx=await b.newContext({viewport:{width:w,height:h},deviceScaleFactor:2,isMobile:w<700,hasTouch:w<700});
   const p=await ctx.newPage();

@@ -2,7 +2,7 @@
    not widen the page in either script. */
 const { chromium } = require('playwright');
 (async()=>{
- const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome',args:['--no-sandbox']});
+ const b=await chromium.launch(require('./browser'));
  let fails=0; const note=(ok,m)=>{if(!ok)fails++;console.log((ok?'  ok   ':'  FAIL ')+m);};
  for(const lang of ['en','ar']){
   const ctx=await b.newContext({viewport:{width:1400,height:900},locale:lang==='ar'?'ar-EG':'en-US'});

@@ -30,7 +30,7 @@ const lum = (r, g, b) => {
 };
 
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
+  const browser = await chromium.launch(require('./browser'));
   let fails = 0;
   const note = (ok, m) => { if (!ok) fails++; console.log((ok ? '  ok   ' : '  FAIL ') + m); };
 
@@ -50,7 +50,8 @@ const lum = (r, g, b) => {
         await page.waitForTimeout(1100);
 
         // --- geometry, in the page ---
-        const geo = await page.evaluate(() => {
+        const geo = await page.evaluate(async () => {
+          await document.fonts.ready;
           const de = document.documentElement;
           const vis = el => {
             const cs = getComputedStyle(el);
@@ -105,6 +106,21 @@ const lum = (r, g, b) => {
              it cannot clip a descender, and a collapsed panel keeps its
              position while showing nothing. Comparing boxes flagged all of
              those and none of them were real. */
+          /* A line box is the FONT's full height, not the glyphs'. Cairo's is
+             1.87em, so a headline set at .94 has boxes reaching far past its
+             letters — the pill and the lead below "collided" with empty font
+             padding once the real web font loaded. Canvas reports both heights
+             for the same font; the difference trims each line to its ink. */
+          const cx = document.createElement('canvas').getContext('2d');
+          const trimOf = node => {
+            const cs = getComputedStyle(node.parentElement);
+            let s = node.nodeValue.trim();
+            if (cs.textTransform === 'uppercase') s = s.toUpperCase();
+            cx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+            const m = cx.measureText(s);
+            return { top: m.fontBoundingBoxAscent - m.actualBoundingBoxAscent,
+                     bottom: m.fontBoundingBoxDescent - m.actualBoundingBoxDescent };
+          };
           const inkOf = el => {
             // union of the TEXT NODES' line boxes. Selecting the element's
             // contents includes inline padding, and the headline's reveal
@@ -115,8 +131,11 @@ const lum = (r, g, b) => {
             while ((n = w.nextNode())) {
               if (!n.nodeValue.trim()) continue;
               const r = document.createRange(); r.selectNodeContents(n);
-              for (const q of r.getClientRects()) {
-                if (q.width < 1 || q.height < 1) continue;
+              const k = trimOf(n);
+              for (const box of r.getClientRects()) {
+                if (box.width < 1 || box.height < 1) continue;
+                const q = { left: box.left, right: box.right,
+                            top: box.top + k.top, bottom: box.bottom - k.bottom };
                 t = t ? { top: Math.min(t.top, q.top), bottom: Math.max(t.bottom, q.bottom),
                           left: Math.min(t.left, q.left), right: Math.max(t.right, q.right) }
                       : { top: q.top, bottom: q.bottom, left: q.left, right: q.right };

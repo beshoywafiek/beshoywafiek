@@ -20,7 +20,11 @@ npm test                         # all 15 gates — MUST be green before shippin
 ```
 
 Those are `python3 _source/build.py`, `python3 -m http.server 8099` and
-`node _source/tests/check.js`. The gates must be run from `_source/tests/`.
+`node _source/tests/check.js`. `npm test` works from any directory — `check.js`
+runs each gate from its own folder. Every gate gets Chromium from
+`_source/tests/browser.js`: `CHROME_PATH` if set, else the Claude sandbox's
+build, else Playwright's own (on your own computer, install it once with
+`npx playwright install chromium`).
 
 ## Layout
 
@@ -39,9 +43,12 @@ _source/build.py      the generator (~1100 lines)
 _source/content.py    ALL site copy and settings — the file the owner edits
 _source/meta.py       project names, order, categories, and the per-project STORY
 _source/icons.py      the icon set, normalised to one grid
+_source/icons-drawn.py the previous hand-drawn set — history, nothing imports it
 _source/src/style.css authored stylesheet  → copied to css/
 _source/src/site.js   authored JS          → copied to js/
-_source/tests/*.js    the gates
+_source/tests/*.js    the 15 gates (the list is in check.js), plus tools that
+                      are NOT gates: fps.js, iso.js (performance), nojs.js
+                      (the page with JavaScript off), norm.js (icon normaliser)
 _config.yml           keeps _source/ and the docs off the live site
 ```
 
@@ -154,6 +161,23 @@ Measured on this page, not in general:
   not sort, `random`, or a timestamp finer than the date. `node det.js` builds
   twice and compares every generated file.
 
+## The gates must measure what the visitor sees
+
+- **A text range's box is the font's full height, not the glyphs'.** Cairo's
+  is 1.87em; the headline is set at .94, so its boxes reach far past its
+  letters. `clip.js` and `audit.js` compared those boxes and failed on empty
+  font padding — but only where Google Fonts actually loaded. A sandbox that
+  could not reach the fonts fell back to a shorter font and stayed green. Both
+  gates now trim each box to the real ink (canvas `measureText`). Never "fix"
+  a gate by blocking the web fonts: it would then test a font nobody sees.
+- **When you change a gate, break the page on purpose and watch it fail.**
+  The ink fix was checked that way: removing the headline mask's padding
+  still fails `clip.js` (the tail of the p in "speaks"), and pushing the lead
+  into the title still fails `audit.js`. A gate that cannot fail checks nothing.
+- **`fps.js` numbers from the Claude sandbox are noise.** It has no GPU; the
+  same code measured 40 to 53fps on the desktop run across three tries. Judge
+  the performance budget on a real machine.
+
 ## Content rules — do not break these
 
 - **Never invent a client testimonial.** `content.py → PROOF` is empty on
@@ -197,6 +221,14 @@ Measured on this page, not in general:
 4. Two of the seven icons are outline while five are solid fills
    (`IDENTITY`, `D_PALETTE` in `icons.py`). Solid replacements would make the
    set coherent.
+5. **The hero headline is spaced wider than its CSS says.** `.mega .ln` pads
+   each line and hands the space back with negative margins, but the margins of
+   neighbouring lines collapse into one, so only part of it comes back. Measured
+   line pitch: 1.28em in English (CSS says .94) and 1.58em in Arabic (CSS says
+   1.12) — 52px and 72px extra per line on a desktop. The comment in
+   `style.css` claims "nothing moves"; it does. Fixing it (e.g. making `.mega`
+   a flex column, where margins do not collapse) visibly tightens the
+   headline, so it is his design call, not a silent fix.
 
 ---
 
