@@ -15,12 +15,11 @@
      offer.js  the offer's memory: a dismissal and a reply are not the same
      feat.js   the channel button, the offer, the lead form
      det.js    the build is deterministic: same sources -> identical pages
-     nb.js     "the work, counted": every figure is the true count, bars in proportion
    Usage: npm test, or node check.js from any directory
           (the local server must be up on 8099) */
 const { spawn } = require('child_process');
 
-const GATES = ['test.js', 'clip.js', 'rtl.js', 'arrow.js', 'svl.js', 'nav.js', 'menuf.js', 'lens.js', 'audit.js', 'links.js', 'hp.js', 'bar.js', 'offer.js', 'feat.js', 'det.js', 'nb.js'];
+const GATES = ['test.js', 'clip.js', 'rtl.js', 'arrow.js', 'svl.js', 'nav.js', 'menuf.js', 'lens.js', 'audit.js', 'links.js', 'hp.js', 'bar.js', 'offer.js', 'feat.js', 'det.js'];
 
 (async () => {
   const failed = [];

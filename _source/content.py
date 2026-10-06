@@ -65,22 +65,10 @@ ALL_NOTE = ('كل مشروع ليه صفحة لوحده، بالمقاس الل�
 
 # الشريط البرتقالي العريض
 BAND_KICKER = ('طريقة الشغل', 'How it works')
-BAND_LINE = ('كل مشروع بيبدأ بفهم البراند، وبينتهي بنظام بصري متماسك.',
-             'Every project starts with the brand, and ends with a visual '
-             'system that holds.')
-
-# ------------------------------------------------------- الشغل بالأرقام
-# الأرقام نفسها مش مكتوبة هنا — بتتعد من المشاريع اللي في meta.py وقت
-# البناء. شيل مشروع أو زوّد واحد والرسوم بتتظبط لوحدها. هنا الكلام بس.
-INFO_HEAD   = ('الشغل بالأرقام', 'The work, counted')
-INFO_NOTE   = ('كل رقم هنا متعدّ من المشاريع المنشورة فعلاً.',
-               'Every number here is counted from the published projects.')
-INFO_PIECES = ('قطعة متسلّمة', 'pieces delivered')
-INFO_ACROSS = ('في {n} مشروع منشور', 'across {n} published projects')
-INFO_DISC   = ('القطع حسب المجال', 'Pieces by discipline')
-INFO_YEARS  = ('مشاريع كل سنة', 'Projects per year')
-INFO_FMT    = ('القطع حسب المقاس', 'Pieces by format')
-INFO_FMTS   = [('أفقي', 'Landscape'), ('مربع', 'Square'), ('طولي', 'Portrait')]
+# <em> = الكلمات اللي بتتلون وبتتكتب بخط مختلف على الكمبيوتر (على الموبايل شكلها عادي)
+BAND_LINE = ('كل مشروع بيبدأ بفهم <em>البراند</em>، وبينتهي <em>بنظام بصري</em> متماسك.',
+             'Every project starts with <em>the brand</em>, and ends with a <em>visual '
+             'system</em> that holds.')
 
 # ----------------------------------------------------------------- عني
 ABOUT_HEAD = ('عني', 'About')

@@ -60,8 +60,12 @@ const stub = (page) => page.route('**://mir-s3-cdn-cf.behance.net/**',
         // an invisible layer swallowing taps was a real bug on this project
         const mid = document.elementFromPoint(de.clientWidth / 2, de.clientHeight / 2);
         const figs = document.querySelectorAll('.fig').length;
-        const zero = [...document.querySelectorAll('.fig, .tile, .wrow')]
-          .filter(el => el.getBoundingClientRect().height < 4).length;
+        // A card hidden ON PURPOSE is not a collapsed card: on a desktop the
+        // home page swaps the row list for the collage (.clg-i), so only
+        // cards that are actually rendered count — getClientRects() is empty
+        // for anything under display:none.
+        const zero = [...document.querySelectorAll('.fig, .tile, .wrow, .clg-i')]
+          .filter(el => el.getClientRects().length && el.getBoundingClientRect().height < 4).length;
         const menuHidden = (() => { const m = document.getElementById('menu');
           return !m || getComputedStyle(m).display === 'none'; })();
         return { over, wide, mid: mid ? (mid.className || mid.tagName) : 'none',

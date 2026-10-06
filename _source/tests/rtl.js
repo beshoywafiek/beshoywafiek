@@ -7,7 +7,7 @@
 const { chromium } = require('playwright');
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==','base64');
 
-const STRIPS = ['.mq-t', '.tick-t', '.kb-a .kb-t', '.kb-b .kb-t'];
+const STRIPS = ['.mq-t', '.tick-t'];
 
 (async () => {
   const browser = await chromium.launch(require('./browser'));

@@ -16,7 +16,7 @@ Playwright, which only the tests need.
 ```bash
 npm run build                    # regenerate every page from _source/
 npm run serve                    # serve on :8099 — the gates need this running
-npm test                         # all 16 gates — MUST be green before shipping
+npm test                         # all 15 gates — MUST be green before shipping
 ```
 
 Those are `python3 _source/build.py`, `python3 -m http.server 8099` and
@@ -46,9 +46,10 @@ _source/icons.py      the icon set, normalised to one grid
 _source/icons-drawn.py the previous hand-drawn set — history, nothing imports it
 _source/src/style.css authored stylesheet  → copied to css/
 _source/src/site.js   authored JS          → copied to js/
-_source/tests/*.js    the 16 gates (the list is in check.js), plus tools that
+_source/tests/*.js    the 15 gates (the list is in check.js), plus tools that
                       are NOT gates: fps.js, iso.js (performance), nojs.js
-                      (the page with JavaScript off), norm.js (icon normaliser)
+                      (the page with JavaScript off), norm.js (icon normaliser),
+                      mobcmp.js (the phone layout against a reference copy)
 _config.yml           keeps _source/ and the docs off the live site
 ```
 
@@ -201,27 +202,35 @@ Measured on this page, not in general:
   inside the exported SVG. Fixed in `norm.js`, and all seven now sit at 1.6 —
   the numbers and why are at the top of `icons.py`.
 
-## Motion and the infographic
+## Grids
 
-- **"The work, counted" (`numbers()` in `build.py`) is counted from `P` at
-  build time — never type one of its figures.** `nb.js` recounts from
-  `js/projects.json` and fails on any mismatch, including where a counter
-  lands after animating. Counters start from zero only when JS runs, motion
-  is allowed and the block is below the fold; the real number is in the HTML.
-- **The 1px-gap grids (`.inc`, `.steps`, `.dv`, `.nb-g`) draw their hairlines
-  on the cards (a 1px solid shadow), not as the grid's background.** As a
-  background, every row the cards did not fill — 6 deliverables in 4 columns
-  on a service page — showed as a solid grey slab, and so did any card fading
-  in. Cards in these grids stay put; their children rise.
-- **The crossing bands (`.kb`) follow the strip rules:** Arabic has its own
-  keyframes (`slide-r`, `slide-r-back`), they only run while on screen
-  (`.run`), and `rtl.js` checks both stay filled. Arabic gets a fill, not
-  `-webkit-text-stroke` — an outline draws every join inside connected letters.
-- **Split text into whole words, never letters** (`words()`): splitting Arabic
-  into letters breaks the joins between them.
-- Magnetic buttons use the separate `translate` property so they add to the
-  hover lift in `transform`, and read the rect on `pointerenter`, never in
-  `pointermove`.
+- **The 1px-gap grids (`.inc`, `.steps`, `.dv`, `.me-facts`, `.cs-meta`,
+  `.cs-st-g`, `.pf`) draw their hairlines on the cards (a 1px solid shadow),
+  not as the grid's background.** As a background, every row the cards did not
+  fill — 6 deliverables in 4 columns on a service page — showed as a solid
+  grey slab. New grids of this kind follow the same rule.
+
+## The phone is frozen; the desktop is the bold one
+
+- **The owner wants the phone experience kept exactly as the live site has
+  it.** Desktop work goes inside `@media (min-width:861px)` and desktop-gated
+  JS; outside that query only rules that keep new markup hidden or neutral on
+  a phone. Check with `node mobcmp.js` (a tool, not a gate): serve a
+  `git worktree` of `main` on 8098 and the working copy on 8099; it compares
+  four pages full-length at 390px in both languages. The accepted differences
+  today are the icon line weight and sub-pixel word spacing in the statement
+  band (its words are split into spans for the desktop reveal).
+- **Desktop direction (owner's choice, Oct 2026): bold, with motion — the
+  Lando Norris register in this site's colours.** So far: a pen stroke draws
+  itself under the headline's accent word (`.swoosh`, mirrored in Arabic); the
+  statement band becomes a light manifesto page with full-width type and the
+  `<em>` words of `BAND_LINE` in orange, set in Aref Ruqaa (Arabic) or
+  Instrument Serif italic (English), lighting up word by word; the work list
+  becomes a scattered collage (`collage()` in `build.py`, positions in `CLG`)
+  whose pieces drift at their own speeds. Those two faces are only referenced
+  inside the desktop query, so a phone never downloads them.
+- `test.js` counts only rendered cards as collapsed: the desktop hides the row
+  list on purpose and checks the collage pieces instead.
 
 ## Content rules — do not break these
 
@@ -280,12 +289,11 @@ Measured on this page, not in general:
 npm run build && npm test     # with `npm run serve` up in another shell
 ```
 
-All 16 gates must print green. They exist because each one caught a real bug:
+All 15 gates must print green. They exist because each one caught a real bug:
 layout, clipped text, the RTL strips, arrow direction, the services list, the
 dropdown's keyboard behaviour, the phone menu fitting, the hero lens tracking,
 a desktop + phone audit (contrast, tap targets, overflow, collisions), every
 internal link actually followed, the spam honeypot, the address-bar resize, the
-offer's memory, the contact features, the build being deterministic, and
-the infographic's figures being the true counts.
+offer's memory, the contact features, and the build being deterministic.
 
 If you change something a gate covers, update the gate — do not delete it.
