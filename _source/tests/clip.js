@@ -69,7 +69,11 @@ const PAGES=['/index.html','/work.html','/work/mountain-view-club.html','/work/y
                 a=a.parentElement;
               }
             }
-            if((clipsY||clipsX||cut) && !String(el.className).includes('wrow')){
+            /* .kb: the crossing bands are tilted tracks far wider than the
+               screen. A word out past the edge sits above or below the band's
+               upright bounding box by geometry alone — rotation, not clipping.
+               rtl.js checks those bands stay filled. */
+            if((clipsY||clipsX||cut) && !String(el.className).includes('wrow') && !el.closest('.kb')){
               out.push({cls:(el.className||el.tagName).toString().slice(0,34),
                 txt:el.textContent.trim().slice(0,26),
                 y:clipsY?el.scrollHeight-el.clientHeight:0,

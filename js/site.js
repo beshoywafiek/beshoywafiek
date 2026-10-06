@@ -53,7 +53,7 @@
      The observer watches the container, never an element that clip-path has
      collapsed to zero height — a clipped element reports ratio 0 forever and
      the card stays blank. That bug cost an afternoon; see .rv in the CSS. */
-  var targets = document.querySelectorAll('.up, .rv, .mega');
+  var targets = document.querySelectorAll('.up, .rv, .mega, .shead');
   if ('IntersectionObserver' in window && targets.length) {
     var io = new IntersectionObserver(function (es) {
       es.forEach(function (e) {
@@ -1007,4 +1007,83 @@
   document.addEventListener('click', function (e) { if (!d.contains(e.target)) close(0); });
   // following a link inside should not leave the panel hanging open
   panel.addEventListener('click', function () { close(0); });
+})();
+
+/* ===== motion pass: counting figures, the crossing bands, magnetic buttons ===== */
+(function () {
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hasIO = 'IntersectionObserver' in window;
+
+  /* Figures count up from zero the first time their block comes into view.
+     The real number is in the HTML, so without JavaScript, under reduced
+     motion, or for a crawler, the page simply says it. */
+  var blocks = document.querySelectorAll('.nb-hero, .nb-c');
+  if (blocks.length && hasIO && !reduce) {
+    var run = function (block) {
+      Array.prototype.forEach.call(block.querySelectorAll('[data-count]'), function (el, i) {
+        var target = parseInt(el.getAttribute('data-count'), 10), t0 = null;
+        var dur = 1100 + Math.min(target, 600);       // big numbers take a little longer
+        var wait = 250 + i * 120;                    // in step with the bars beside them
+        setTimeout(function () {
+          requestAnimationFrame(function step(ts) {
+            if (t0 === null) t0 = ts;
+            var k = Math.min((ts - t0) / dur, 1);
+            el.textContent = Math.round((1 - Math.pow(1 - k, 3)) * target);
+            if (k < 1) requestAnimationFrame(step);
+          });
+        }, wait);
+      });
+    };
+    var ioN = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        ioN.unobserve(e.target);
+        run(e.target);
+      });
+    }, { threshold: 0.35 });
+    Array.prototype.forEach.call(blocks, function (b) {
+      // only the ones not already on screen start from zero
+      if (b.getBoundingClientRect().top > innerHeight) {
+        Array.prototype.forEach.call(b.querySelectorAll('[data-count]'), function (el) { el.textContent = '0'; });
+        ioN.observe(b);
+      }
+    });
+  }
+
+  /* The bands only animate while they are on screen and the tab is visible. */
+  var bands = document.querySelectorAll('.kb');
+  if (bands.length && !reduce) {
+    var onScreen = new WeakMap();
+    var sync = function (b) { b.classList.toggle('run', !!onScreen.get(b) && !document.hidden); };
+    if (hasIO) {
+      var ioB = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { onScreen.set(e.target, e.isIntersecting); sync(e.target); });
+      }, { threshold: 0 });
+      Array.prototype.forEach.call(bands, function (b) { ioB.observe(b); });
+    } else {
+      Array.prototype.forEach.call(bands, function (b) { onScreen.set(b, true); sync(b); });
+    }
+    document.addEventListener('visibilitychange', function () { Array.prototype.forEach.call(bands, sync); });
+  }
+
+  /* Buttons lean toward a mouse pointer. The rect is read once on enter —
+     never inside pointermove — and only where there is a real hover. */
+  if (!reduce && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    Array.prototype.forEach.call(document.querySelectorAll('.btn'), function (b) {
+      var r = null;
+      b.addEventListener('pointerenter', function () { r = b.getBoundingClientRect(); });
+      b.addEventListener('pointermove', function (ev) {
+        if (!r) return;
+        var dx = (ev.clientX - (r.left + r.width / 2)) / (r.width / 2);
+        var dy = (ev.clientY - (r.top + r.height / 2)) / (r.height / 2);
+        b.style.setProperty('--mx', (dx * 6).toFixed(1) + 'px');
+        b.style.setProperty('--my', (dy * 4).toFixed(1) + 'px');
+      });
+      b.addEventListener('pointerleave', function () {
+        r = null;
+        b.style.removeProperty('--mx');
+        b.style.removeProperty('--my');
+      });
+    });
+  }
 })();

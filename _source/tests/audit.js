@@ -66,7 +66,7 @@ const lum = (r, g, b) => {
             if (!vis(el)) return;
             const b = el.getBoundingClientRect();
             if (b.width < 1 || b.height < 1) return;
-            if (el.closest('.mq,.tick,.hero-fx,.hero-bgw,.hero-sheen,.lb')) return;   // strips overflow on purpose
+            if (el.closest('.mq,.tick,.kb,.hero-fx,.hero-bgw,.hero-sheen,.lb')) return;   // strips overflow on purpose
             if (b.right > de.clientWidth + 2 || b.left < -2)
               out.outside.push((el.className || el.tagName) + ' ' + Math.round(b.left) + '→' + Math.round(b.right));
           });

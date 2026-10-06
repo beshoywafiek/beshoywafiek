@@ -439,7 +439,7 @@ def fig(m, idx, total, kind=1, eager=False, cap=1400, alt=''):
 
 
 
-def proof():
+def proof(idx):
     """Client quotes. Returns nothing at all when he has not added any — an
     empty 'what clients say' heading is worse than no section."""
     if not getattr(C, 'PROOF', None):
@@ -453,7 +453,7 @@ def proof():
 <section class="sec" id="proof">
   <div class="wrap">
     <div class="shead">
-      <div class="shead-l"><span class="idx">05</span><h2>{bi(*C.PROOF_HEAD)}</h2></div>
+      <div class="shead-l"><span class="idx">{idx}</span><h2>{bi(*C.PROOF_HEAD)}</h2></div>
       <p class="note">{bi(*C.PROOF_NOTE)}</p>
     </div>
     <div class="pf">{cards}</div>
@@ -717,6 +717,108 @@ SVC = C.SERVICES
 DLV = C.DELIVER
 
 
+def numbers(idx):
+    """The work, counted. Every figure is derived from P at build time — the
+    same rule as the stats strip: a typed count goes stale the day a project
+    is added or removed. Bars are one series in one colour (the brand orange
+    passes the contrast check on --bg), sorted, each with its value written
+    beside it, so nothing is read from colour or from bar length alone."""
+    pieces = sum(len(p['mods']) for p in P)
+    n_proj = C.PROJECT_COUNT if C.PROJECT_COUNT else len(P)
+
+    disc = {}
+    for p in P:
+        disc[p['cat']] = disc.get(p['cat'], 0) + len(p['mods'])
+    disc = sorted(disc.items(), key=lambda kv: (-kv[1], kv[0]))
+    top = disc[0][1]
+    bars = ''.join(
+        '<li style="--i:%d;--w:%.4f"><span class="nb-l">%s</span>'
+        '<b class="nb-v" data-count="%d">%d</b>'
+        '<span class="nb-tr" aria-hidden="true"><i></i></span></li>'
+        % (i, v / top, bi(*CATS[c]), v, v) for i, (c, v) in enumerate(disc))
+
+    years = {}
+    for p in P:
+        years[p['year']] = years.get(p['year'], 0) + 1
+    years = sorted(years.items())
+    ymax = max(v for _, v in years)
+    cols = ''.join(
+        '<div class="nb-col" style="--i:%d;--h:%.4f"><b class="nb-v" data-count="%d">%d</b>'
+        '<span class="nb-tr" aria-hidden="true"><i></i></span><span class="nb-l">%d</span></div>'
+        % (i, v / ymax, v, v, y) for i, (y, v) in enumerate(years))
+
+    # each format drawn as a frame in its own typical proportion: the
+    # median ratio of the pieces in that class, so the shape is the data too
+    fm = {'l': [], 's': [], 'p': []}
+    for p in P:
+        for m in p['mods']:
+            r = m['r']
+            fm['p' if r < .9 else 'l' if r > 1.1 else 's'].append(r)
+    med = lambda xs: sorted(xs)[len(xs) // 2]
+    frames = ''.join(
+        '<div class="nb-f" style="--i:%d;--r:%.3f;--s:%.4f">'
+        '<span class="nb-fr" aria-hidden="true"></span>'
+        '<b class="nb-v" data-count="%d">%d</b><span class="nb-l">%s</span>'
+        '<span class="nb-m" aria-hidden="true"><i></i></span></div>'
+        % (i, med(fm[k]), len(fm[k]) / pieces, len(fm[k]), len(fm[k]), bi(*C.INFO_FMTS[i]))
+        for i, k in enumerate(('l', 's', 'p')) if fm[k])
+
+    across = bi(C.INFO_ACROSS[0].format(n=n_proj), C.INFO_ACROSS[1].format(n=n_proj))
+    return f'''
+<section class="sec nb" id="numbers">
+  <div class="wrap">
+    <div class="shead">
+      <div class="shead-l"><span class="idx">{idx}</span><h2>{bi(*C.INFO_HEAD)}</h2></div>
+      <p class="note">{bi(*C.INFO_NOTE)}</p>
+    </div>
+    <div class="nb-g">
+      <div class="nb-hero up">
+        <b class="nb-big" data-count="{pieces}">{pieces}</b>
+        <p class="nb-k">{bi(*C.INFO_PIECES)}</p>
+        <p class="nb-s">{across}</p>
+      </div>
+      <figure class="nb-c up"><figcaption class="nb-h">{bi(*C.INFO_DISC)}</figcaption>
+        <ul class="nb-bars">{bars}</ul></figure>
+      <figure class="nb-c up"><figcaption class="nb-h">{bi(*C.INFO_YEARS)}</figcaption>
+        <div class="nb-cols">{cols}</div></figure>
+      <figure class="nb-c nb-c--f up"><figcaption class="nb-h">{bi(*C.INFO_FMT)}</figcaption>
+        <div class="nb-fs">{frames}</div></figure>
+    </div>
+  </div>
+</section>'''
+
+
+def kband():
+    """Two crossing bands of big moving type. Decorative, so aria-hidden —
+    every word on them is already on the page as real text. The words come
+    from what is already true elsewhere: the disciplines in CATS, and the
+    markets and languages in ABOUT_FACTS, so nothing new needs keeping in
+    step. Each half of a track must be wider than the widest screen, or a
+    bare gap scrolls past (see the stats strip)."""
+    sep = '<i>✦</i>'
+    a = ''.join('<span>%s</span>%s' % (bi(ar, en), sep) for ar, en in CATS.values())
+    facts = {f[1]: f for f in C.ABOUT_FACTS}
+    b = ''
+    for key in ('Markets', 'Languages'):
+        if key in facts:
+            _, _, va, ve = facts[key]
+            b += ''.join('<span>%s</span>%s' % (bi(x.strip(), y.strip()), sep)
+                         for x, y in zip(va.split('·'), ve.split('·')))
+    return f'''
+<section class="kb" aria-hidden="true">
+  <div class="kb-s kb-a"><div class="kb-t">{a * 4}{a * 4}</div></div>
+  <div class="kb-s kb-b"><div class="kb-t">{b * 4}{b * 4}</div></div>
+</section>'''
+
+
+def words(ar, en):
+    """A line split into words for a staggered reveal. Whole words only:
+    splitting Arabic into letters would break the joins between them."""
+    w = lambda s: ' '.join('<span class="w" style="--i:%d">%s</span>' % (i, x)
+                           for i, x in enumerate(s.split()))
+    return bi(w(ar), w(en))
+
+
 def home():
     hero = ''.join(
         '<span class="%s">%s</span>' % (lang, ''.join(
@@ -848,6 +950,9 @@ def home():
     dlv = ''.join(f'''<div class="dv-c up"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{ic}</svg>
   <h3>{bi(ar, en)}</h3><p>{bi(ard, end)}</p></div>''' for ar, en, ard, end, ic in DLV)
 
+    # the section numbers run on whether or not the testimonials are there
+    faq_n, end_n = ('07', '08') if getattr(C, 'PROOF', None) else ('06', '07')
+
     body = f'''
 <main id="top">
 <section class="hero">
@@ -885,24 +990,26 @@ def home():
 <section class="say">
   <div class="wrap">
     <p class="k">{bi(*C.BAND_KICKER)}</p>
-    <h2>{bi(*C.BAND_LINE)}</h2>
+    <h2 class="up">{words(*C.BAND_LINE)}</h2>
   </div>
 </section>
+{numbers('02')}
 
 <section class="sec" id="services">
   <div class="wrap">
     <div class="shead">
-      <div class="shead-l"><span class="idx">02</span><h2>{bi(*C.SERVICES_HEAD)}</h2></div>
+      <div class="shead-l"><span class="idx">03</span><h2>{bi(*C.SERVICES_HEAD)}</h2></div>
       <p class="note">{bi(*C.SERVICES_NOTE)}</p>
     </div>
     <div class="svl">{svc}</div>
   </div>
 </section>
+{kband()}
 
 <section class="sec" id="about">
   <div class="wrap">
     <div class="shead">
-      <div class="shead-l"><span class="idx">03</span><h2>{bi(*C.ABOUT_HEAD)}</h2></div>
+      <div class="shead-l"><span class="idx">04</span><h2>{bi(*C.ABOUT_HEAD)}</h2></div>
     </div>
     <div class="me">
       <div class="me-ph up"><img src="images/profile.jpg" alt="Beshoy Wafiek" loading="lazy" decoding="async" width="900" height="900"></div>
@@ -918,18 +1025,18 @@ def home():
 <section class="sec" id="deliver">
   <div class="wrap">
     <div class="shead">
-      <div class="shead-l"><span class="idx">04</span><h2>{bi(*C.DELIVER_HEAD)}</h2></div>
+      <div class="shead-l"><span class="idx">05</span><h2>{bi(*C.DELIVER_HEAD)}</h2></div>
       <p class="note">{bi(*C.DELIVER_NOTE)}</p>
     </div>
     <div class="dv">{dlv}</div>
   </div>
 </section>
 
-{proof()}
+{proof('06')}
 <section class="sec" id="faq">
   <div class="wrap">
     <div class="shead">
-      <div class="shead-l"><span class="idx">05</span><h2>{bi(*C.FAQ_HEAD)}</h2></div>
+      <div class="shead-l"><span class="idx">{faq_n}</span><h2>{bi(*C.FAQ_HEAD)}</h2></div>
     </div>
     <div class="qas">{faq}</div>
   </div>
@@ -937,7 +1044,7 @@ def home():
 
 <section class="end" id="contact">
   <div class="wrap">
-    <span class="idx">06</span>
+    <span class="idx">{end_n}</span>
     <h2 class="up">{bi(C.CONTACT_AR, C.CONTACT_EN)}</h2>
     <div class="pick up">
       <p class="pick-k">{bi(*C.PICK_LABEL)}</p>

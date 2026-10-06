@@ -1250,3 +1250,156 @@ html[lang="ar"] .nf-h{letter-spacing:-.01em;line-height:1.3;}
 .nf-a{display:flex;align-items:center;gap:clamp(16px,2.4vw,28px);flex-wrap:wrap;
   margin-top:clamp(26px,4vw,44px);}
 @media (max-width:620px){.nf-a .btn{width:100%;justify-content:center;}}
+
+/* =========================================================
+   Motion pass — the work counted, the crossing bands, heads that draw in.
+   Everything here moves transform and opacity only, waits for the element
+   to be on screen, and stands still under prefers-reduced-motion.
+   ========================================================= */
+
+/* ---------- section heads: the words rise, an orange line sweeps the rule */
+.js .shead{position:relative;}
+.js .shead .idx,.js .shead h2,.js .shead .note{opacity:0;transform:translate3d(0,.55em,0);
+  transition:opacity .8s var(--ease),transform .8s var(--ease);}
+.js .shead h2{transition-delay:.06s;}
+.js .shead .note{transition-delay:.18s;}
+.js .shead.in .idx,.js .shead.in h2,.js .shead.in .note{opacity:1;transform:none;}
+.shead::after{content:'';position:absolute;inset-inline:0;bottom:-1px;height:1px;
+  background:var(--orange);transform:scaleX(0);transform-origin:left center;opacity:0;pointer-events:none;}
+html[dir="rtl"] .shead::after{transform-origin:right center;}
+.js .shead.in::after{animation:rule-sweep 1.5s var(--ease) .1s both;}
+@keyframes rule-sweep{0%{transform:scaleX(0);opacity:1}62%{transform:scaleX(1);opacity:1}100%{transform:scaleX(1);opacity:0}}
+
+/* ---------- the orange band: the line arrives a word at a time */
+.js .say h2.up{opacity:1;transform:none;}
+.js .say .w{display:inline-block;opacity:0;transform:translate3d(0,.5em,0);
+  transition:opacity .7s var(--ease),transform .7s var(--ease);
+  transition-delay:calc(var(--i) * 55ms);}
+.js .say h2.in .w{opacity:1;transform:none;}
+
+/* ---------- the 1px-gap grids: lines drawn by the cards, not the grid ----------
+   These grids drew their hairlines as the grid's own grey background showing
+   through a 1px gap. Any row the cards did not fill — 6 deliverables in 4
+   columns, 4 steps in 3 — showed as a solid grey slab. Each card now draws
+   its own line with a 1px shadow over the gap, so an empty cell is just page.
+   The colour is solid (--rule over --bg): two translucent shadows meeting in
+   one gap would add up to a brighter line there. */
+.inc,.steps,.dv,.nb-g{background:none;border:0;}
+.inc>li,.steps>.step,.dv>.dv-c,.nb-g>*{box-shadow:0 0 0 1px #2C2A2A;}
+
+/* ---------- cards inside a 1px-gap grid ----------
+   The card itself stays put, so the hairlines it draws hold still while its
+   contents rise into them. (Before the lines moved onto the cards, fading a
+   card left a grey slab on screen until it revealed.) */
+.js .dv-c.up,.js .nb-g>.up{opacity:1;transform:none;}
+.js .dv-c.up>*,.js .nb-g>.up>*{transition:opacity .75s var(--ease),transform .75s var(--ease);transition-delay:inherit;}
+.js .dv-c.up:not(.in)>*,.js .nb-g>.up:not(.in)>*{opacity:0;transform:translate3d(0,22px,0);}
+
+/* ---------- what you get: the cards land one after another */
+.dv .dv-c:nth-child(2){transition-delay:.08s;}
+.dv .dv-c:nth-child(3){transition-delay:.16s;}
+.dv .dv-c:nth-child(4){transition-delay:.24s;}
+.dv-c{position:relative;}
+.dv-c::before{content:'';position:absolute;inset-inline:0;top:0;height:2px;background:var(--orange);
+  transform:scaleX(0);transform-origin:left center;transition:transform .55s var(--ease);}
+html[dir="rtl"] .dv-c::before{transform-origin:right center;}
+.dv-c:hover::before{transform:scaleX(1);}
+
+/* ---------- magnetic buttons (desktop pointer only; set from site.js).
+   `translate` is its own property, so it adds to the hover lift in
+   `transform` instead of replacing it. */
+.js .btn{translate:var(--mx,0px) var(--my,0px);transition:background .3s,transform .3s var(--ease),translate .35s var(--ease);}
+
+/* ---------- the work, counted ---------- */
+.nb-g{display:grid;grid-template-columns:1fr;gap:1px;background:var(--rule);border:1px solid var(--rule);}
+.nb-g>*{background:var(--bg);margin:0;padding:clamp(22px,3vw,44px);min-width:0;}
+.nb-h{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--mut);margin-bottom:clamp(18px,2.4vw,30px);}
+html[lang="ar"] .nb-h{font-family:var(--sans);letter-spacing:0;font-size:13px;}
+.nb-v{font-weight:800;color:var(--ink);font-size:15px;}
+
+.nb-hero{display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;}
+.nb-big{display:block;font-size:clamp(92px,17vw,236px);font-weight:900;line-height:.9;letter-spacing:-.055em;color:var(--ink);}
+.nb-hero::after{content:'';display:block;width:clamp(70px,9vw,130px);height:4px;border-radius:4px;background:var(--orange);
+  margin-top:clamp(16px,2vw,26px);transform:scaleX(0);transform-origin:left center;transition:transform 1s var(--ease) .35s;}
+html[dir="rtl"] .nb-hero::after{transform-origin:right center;}
+.nb-hero.in::after{transform:scaleX(1);}
+.nb-hero::after{order:2;}
+.nb-k{order:3;font-size:clamp(20px,2.3vw,30px);font-weight:800;margin-top:clamp(14px,1.8vw,22px);}
+.nb-s{order:4;color:var(--mut);font-size:14.5px;margin-top:4px;}
+
+/* bars: one series, one colour, longest first, the value beside each */
+.nb-bars{list-style:none;display:grid;gap:clamp(14px,1.8vw,20px);}
+.nb-bars li{display:grid;grid-template-columns:1fr auto;align-items:baseline;row-gap:8px;}
+.nb-bars .nb-l{font-size:14.5px;color:var(--ink);}
+.nb-tr{display:block;position:relative;background:var(--soft);border-radius:4px;overflow:hidden;}
+.nb-bars .nb-tr{grid-column:1/-1;height:10px;}
+.nb-tr i{position:absolute;inset-block:0;inset-inline-start:0;border-radius:4px;background:var(--orange);
+  transform-origin:left center;transition:transform 1.1s var(--ease);transition-delay:calc(.25s + var(--i) * 120ms);}
+html[dir="rtl"] .nb-tr i{transform-origin:right center;}
+.nb-bars .nb-tr i{width:calc(var(--w) * 100%);}
+.js .nb-c:not(.in) .nb-bars .nb-tr i{transform:scaleX(0);}
+
+/* columns: projects per year, rising from a shared baseline */
+.nb-cols{display:flex;align-items:flex-end;gap:clamp(12px,2.2vw,28px);height:clamp(170px,17vw,230px);
+  border-bottom:1px solid var(--rule);}
+.nb-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;height:100%;}
+.nb-col .nb-tr{width:100%;max-width:74px;height:calc(var(--h) * 72%);background:none;border-radius:4px 4px 0 0;}
+.nb-col .nb-tr i{inset:0;border-radius:4px 4px 0 0;transform-origin:center bottom;}
+.js .nb-c:not(.in) .nb-col .nb-tr i{transform:scaleY(0);}
+.nb-col .nb-l{font-family:var(--mono);font-size:12px;color:var(--mut);margin-bottom:-28px;padding-top:10px;}
+.nb-cols{margin-bottom:28px;}
+
+/* formats: each drawn in its typical proportion */
+.nb-fs{display:flex;align-items:flex-end;gap:clamp(14px,2.4vw,30px);flex-wrap:wrap;}
+.nb-f{display:flex;flex-direction:column;gap:8px;--fh:clamp(64px,7vw,96px);}
+.nb-fr{display:block;height:var(--fh);width:calc(var(--fh) * var(--r));border:1.5px solid var(--ink);border-radius:3px;
+  clip-path:inset(0 0 0 0);transition:clip-path 1s var(--ease);transition-delay:calc(.2s + var(--i) * 140ms);}
+.js .nb-c:not(.in) .nb-fr{clip-path:inset(100% 0 0 0);}
+.nb-f .nb-v{font-size:clamp(20px,2.2vw,28px);font-weight:900;line-height:1.1;margin-top:4px;}
+.nb-f .nb-l{font-size:13.5px;color:var(--mut);}
+.nb-m{display:block;height:4px;border-radius:4px;background:var(--soft);position:relative;overflow:hidden;width:100%;}
+.nb-m i{position:absolute;inset-block:0;inset-inline-start:0;width:calc(var(--s) * 100%);background:var(--orange);border-radius:4px;
+  transform-origin:left center;transition:transform 1s var(--ease);transition-delay:calc(.5s + var(--i) * 140ms);}
+html[dir="rtl"] .nb-m i{transform-origin:right center;}
+.js .nb-c:not(.in) .nb-m i{transform:scaleX(0);}
+
+@media (min-width:861px){
+  .nb-g{grid-template-columns:1.15fr 1fr;}
+}
+
+/* ---------- the crossing bands ----------
+   A width:max-content track anchors to the side its script starts from, so
+   Arabic gets its own keyframes moving the other way (see .mq-t). The bands
+   only run while on screen: site.js toggles .run. */
+.kb{position:relative;overflow:hidden;padding-block:clamp(56px,8vw,120px);}
+.kb-s{position:relative;width:112%;margin-inline-start:-6%;overflow:hidden;}
+.kb-a{background:var(--orange);color:#140A05;transform:rotate(-3deg);z-index:2;}
+.kb-b{border-block:1px solid var(--rule);transform:rotate(2deg);margin-top:clamp(-22px,-1.4vw,-10px);background:var(--bg);}
+.kb-t{display:flex;width:max-content;align-items:center;white-space:nowrap;
+  font-weight:900;font-size:clamp(30px,6vw,96px);line-height:1.35;letter-spacing:-.03em;
+  padding-block:clamp(4px,.6vw,10px);will-change:transform;
+  animation:slide 44s linear infinite;animation-play-state:paused;}
+html[lang="ar"] .kb-t{letter-spacing:0;line-height:1.6;}
+.kb-b .kb-t{animation-name:slide-back;animation-duration:52s;color:transparent;-webkit-text-stroke:1.4px var(--ink);}
+/* An outline shows every join inside connected Arabic letters, so Arabic
+   gets a quiet fill instead. */
+html[lang="ar"] .kb-b .kb-t{color:var(--mut);-webkit-text-stroke:0;}
+html[dir="rtl"] .kb-a .kb-t{animation-name:slide-r;}
+html[dir="rtl"] .kb-b .kb-t{animation-name:slide-r-back;}
+.kb.run .kb-t{animation-play-state:running;}
+.kb-t i{font-style:normal;font-size:.42em;padding-inline:.9em;color:inherit;opacity:.9;-webkit-text-stroke:0;}
+.kb-b .kb-t i{color:var(--orange);}
+@keyframes slide-back  {from{transform:translate3d(-50%,0,0)}to{transform:translate3d(0,0,0)}}
+@keyframes slide-r-back{from{transform:translate3d(50%,0,0)}to{transform:translate3d(0,0,0)}}
+
+@media (prefers-reduced-motion:reduce){
+  .js .shead .idx,.js .shead h2,.js .shead .note,.js .say .w{opacity:1;transform:none;transition:none;}
+  .js .shead.in::after{animation:none;}
+  .kb-t{animation:none;}
+  .nb-tr i,.nb-fr,.nb-m i,.nb-hero::after{transition:none;}
+  .js .nb-c:not(.in) .nb-bars .nb-tr i,.js .nb-c:not(.in) .nb-m i{transform:none;}
+  .js .nb-c:not(.in) .nb-col .nb-tr i{transform:none;}
+  .js .nb-c:not(.in) .nb-fr{clip-path:none;}
+  .js .btn{translate:none;}
+}

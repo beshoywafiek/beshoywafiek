@@ -69,6 +69,19 @@ BAND_LINE = ('كل مشروع بيبدأ بفهم البراند، وبينته�
              'Every project starts with the brand, and ends with a visual '
              'system that holds.')
 
+# ------------------------------------------------------- الشغل بالأرقام
+# الأرقام نفسها مش مكتوبة هنا — بتتعد من المشاريع اللي في meta.py وقت
+# البناء. شيل مشروع أو زوّد واحد والرسوم بتتظبط لوحدها. هنا الكلام بس.
+INFO_HEAD   = ('الشغل بالأرقام', 'The work, counted')
+INFO_NOTE   = ('كل رقم هنا متعدّ من المشاريع المنشورة فعلاً.',
+               'Every number here is counted from the published projects.')
+INFO_PIECES = ('قطعة متسلّمة', 'pieces delivered')
+INFO_ACROSS = ('في {n} مشروع منشور', 'across {n} published projects')
+INFO_DISC   = ('القطع حسب المجال', 'Pieces by discipline')
+INFO_YEARS  = ('مشاريع كل سنة', 'Projects per year')
+INFO_FMT    = ('القطع حسب المقاس', 'Pieces by format')
+INFO_FMTS   = [('أفقي', 'Landscape'), ('مربع', 'Square'), ('طولي', 'Portrait')]
+
 # ----------------------------------------------------------------- عني
 ABOUT_HEAD = ('عني', 'About')
 ABOUT_LEAD = ('مصمم جرافيك من القاهرة، بشتغل على الهويات البصرية ومحتوى '
