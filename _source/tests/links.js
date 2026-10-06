@@ -18,7 +18,8 @@ const fs=require('fs'), path=require('path');
  const pages=[];
  const walk=d=>fs.readdirSync(d,{withFileTypes:true}).forEach(e=>{
    const f=path.join(d,e.name);
-   if(e.isDirectory()&&!['shots','src','__pycache__','node_modules','_source'].includes(e.name)) walk(f);
+   // dot-folders (.claude, .git) are never published, so their pages are not the site's
+   if(e.isDirectory()&&!e.name.startsWith('.')&&!['shots','src','__pycache__','node_modules','_source'].includes(e.name)) walk(f);
    else if(e.name.endsWith('.html')) pages.push(path.relative(ROOT,f));});
  walk(ROOT);
  if (pages.length < 5) { console.log('  FAIL only found ' + pages.length + ' pages in ' + ROOT); process.exit(1); }

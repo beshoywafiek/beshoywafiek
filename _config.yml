@@ -10,3 +10,7 @@ exclude:
   - CLAUDE.md
   - HOW-TO-EDIT.md
   - README.md
+  # design skills in .claude/skills/ write these at the repo root
+  - PRODUCT.md
+  - DESIGN.md
+  - design-system

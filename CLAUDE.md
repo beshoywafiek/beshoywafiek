@@ -66,6 +66,20 @@ hour on this project: the root files look authored, and they are not.
 `build.py` works out where to write by looking for `js/` beside itself or in
 its parent, so it is safe to run from this layout or from a flat dev folder.
 
+## Design skills
+
+`.claude/skills/` holds design skills the owner chose (impeccable, ui-ux-pro-max,
+taste-skill and its presets, Emil Kowalski's motion skills); sources, licences
+and what was left out are in `.claude/skills/README.md`. Use them for taste,
+direction and critique. **Where a skill's defaults clash with this file, this
+file wins** — every rule below is a measurement on this page. In particular:
+no framework, bundler or Tailwind (the site is static HTML from `build.py`);
+no blur, backdrop-filter, blend modes or masks on full-viewport layers; never
+split Arabic text into letters; both languages and RTL for everything; and no
+invented testimonials, metrics or client claims, however a skill frames them.
+Skills that write `PRODUCT.md`, `DESIGN.md` or `design-system/` at the root are
+fine — `_config.yml` keeps those off the live site.
+
 ---
 
 # Rules that were learned the hard way
