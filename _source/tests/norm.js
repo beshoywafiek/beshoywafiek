@@ -39,10 +39,22 @@ const STROKE = 1.6;
       } catch (e) { ink = { x: vb[0], y: vb[1], w: vb[2], h: vb[3] }; }
       const strokeW = (() => { const m = src.match(/stroke-width:?\s*["']?([\d.]+)/); return m ? parseFloat(m[1]) : 0; })();
       const stroked = /stroke:#|stroke="(?!none)/.test(src);
+      /* A stroke-width is in its OWN element's units, and exported files often
+         nest a transform (Illustrator's matrix(1.333…)) between the stroked
+         path and the svg. Ignoring it rendered IDENTITY and D_PALETTE at 2.13
+         instead of 1.6, so measure how many svg units one path unit is. */
+      let unit = 1;
+      const sp = [...svg.querySelectorAll('path,rect,circle,ellipse,line,polyline,polygon')]
+        .find(e => getComputedStyle(e).stroke !== 'none');
+      if (sp) {
+        const m = svg.getScreenCTM().inverse().multiply(sp.getScreenCTM());
+        unit = Math.sqrt(Math.abs(m.a * m.d - m.b * m.c)) || 1;
+      }
       // getBBox ignores the stroke, so a stroked icon is half a stroke bigger
-      if (stroked && strokeW) { ink = { x: ink.x - strokeW / 2, y: ink.y - strokeW / 2,
-                                        w: ink.w + strokeW, h: ink.h + strokeW }; }
-      return { vb, ink, inner: svg.innerHTML, strokeW, stroked };
+      const sw = strokeW * unit;
+      if (stroked && strokeW) { ink = { x: ink.x - sw / 2, y: ink.y - sw / 2,
+                                        w: ink.w + sw, h: ink.h + sw }; }
+      return { vb, ink, inner: svg.innerHTML, strokeW, stroked, scale: unit };
     }, raw);
 
     // scale so the artwork covers TARGET of the box by area, then centre it
@@ -61,8 +73,8 @@ const STROKE = 1.6;
       .replace(/\s*<\/?g[^>]*>\s*/g, m => m.trim())       // keep groups, drop padding
       .replace(/\n\s*/g, '');
     if (r.stroked && r.strokeW) {
-      // after scaling by k, a native width of strokeW renders as strokeW*k
-      const want = (STROKE / k).toFixed(3);
+      // after scaling by k, a native width of strokeW renders as strokeW*scale*k
+      const want = (STROKE / (k * r.scale)).toFixed(3);
       inner = inner.replace(/stroke-width:[\d.]+/g, 'stroke-width:' + want)
                    .replace(/stroke-width="[\d.]+"/g, 'stroke-width="' + want + '"');
     }

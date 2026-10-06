@@ -178,6 +178,15 @@ Measured on this page, not in general:
   same code measured 40 to 53fps on the desktop run across three tries. Judge
   the performance budget on a real machine.
 
+## Icons: judge them rendered, at 34px
+
+- **The icon row looked mixed because of line weight, not solid vs outline.**
+  The docs blamed the two outline icons for being outlines; rendering the set
+  showed `IDENTITY` and `D_PALETTE` at a 2.13 line (they filled in at 34px) and
+  three filled icons at about 0.85. `norm.js` had ignored a transform nested
+  inside the exported SVG. Fixed in `norm.js`, and all seven now sit at 1.6 —
+  the numbers and why are at the top of `icons.py`.
+
 ## Content rules — do not break these
 
 - **Never invent a client testimonial.** `content.py → PROOF` is empty on
@@ -218,10 +227,7 @@ Measured on this page, not in general:
    ever blocks hotlinking, the portfolio goes blank. The fix is downloading the
    images into `images/`; he has to do it, the CDN is not reachable from a
    sandbox.
-4. Two of the seven icons are outline while five are solid fills
-   (`IDENTITY`, `D_PALETTE` in `icons.py`). Solid replacements would make the
-   set coherent.
-5. **The hero headline is spaced wider than its CSS says.** `.mega .ln` pads
+4. **The hero headline is spaced wider than its CSS says.** `.mega .ln` pads
    each line and hands the space back with negative margins, but the margins of
    neighbouring lines collapse into one, so only part of it comes back. Measured
    line pitch: 1.28em in English (CSS says .94) and 1.58em in Arabic (CSS says
