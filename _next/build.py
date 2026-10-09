@@ -183,19 +183,25 @@ def head(title, desc, path, og=None, R=''):
 '''
 
 
-NAV = [  # (href, ar, en, id)
-    ('{R}index.html#work', 'الشغل', 'Work', 'work'),
-    ('{R}index.html#services', 'الخدمات', 'Services', 'services'),
-    ('{R}index.html#about', 'عني', 'About', 'about'),
-    ('{R}index.html#contact', 'تواصل', 'Contact', 'contact'),
+NAV = [  # (page, ar, en, id) — every main section is its own page
+    ('index.html', 'الرئيسية', 'Home', 'home'),
+    ('about.html', 'عني', 'About', 'about'),
+    ('work.html', 'المشاريع', 'Projects', 'work'),
+    ('archive.html', 'الأرشيف', 'Archive', 'archive'),
+    ('services.html', 'الخدمات', 'Services', 'services'),
+    ('contact.html', 'تواصل', 'Contact', 'contact'),
 ]
 
 
-def header(R=''):
-    links = ''.join('<a href="%s">%s</a>' % (h.format(R=R), bi(a, en)) for h, a, en, _ in NAV)
-    menu_links = ''.join(
-        '<li><a href="%s"><i>%02d</i>%s</a></li>' % (h.format(R=R), i + 1, bi(a, en))
-        for i, (h, a, en, _) in enumerate(NAV))
+def navlink(R, href, ar, en, key, cur, extra=''):
+    on = ' aria-current="page"' if key == cur else ''
+    return '<a href="%s%s"%s>%s%s</a>' % (R, href, on, extra, bi(ar, en))
+
+
+def header(R='', cur=''):
+    links = ''.join(navlink(R, h, a, en, k, cur) for h, a, en, k in NAV[1:])
+    menu_links = ''.join('<li>%s</li>' % navlink(R, h, a, en, k, cur, '<i>%02d</i>' % (i + 1))
+                         for i, (h, a, en, k) in enumerate(NAV))
     menu_svc = ''.join(
         '<a href="%sservices/%s.html">%s</a>' % (R, C.SERVICE_PAGES[s[0]]['slug'], bi(s[1], s[2]))
         for s in C.SERVICES)
@@ -225,7 +231,7 @@ def header(R=''):
 def footer(R=''):
     soc = ''.join('<a href="%s" target="_blank" rel="noopener">%s</a>' % (u, bi(a, en))
                   for k, a, en, u in C.SOCIAL if u and k != 'email')
-    pages = ''.join('<a href="%s">%s</a>' % (h.format(R=R), bi(a, en)) for h, a, en, _ in NAV)
+    pages = ''.join('<a href="%s%s">%s</a>' % (R, h, bi(a, en)) for h, a, en, _ in NAV)
     svcs = ''.join('<a href="%sservices/%s.html">%s</a>' % (R, C.SERVICE_PAGES[s[0]]['slug'], bi(s[1], s[2]))
                    for s in C.SERVICES)
     return f'''<footer class="ft">
@@ -234,7 +240,7 @@ def footer(R=''):
       <p class="ft-big-line">{bi('عندك فكرة؟<br>خلينا نخليها براند.', 'Got an idea?<br>Let’s make it a brand.')}</p>
       <a class="btn btn-o" href="{C.WA}" target="_blank" rel="noopener">{WA_ICON}{bi(*C.CONTACT_BTN)}</a>
     </div>
-    <nav class="ft-col" aria-label="Pages"><p class="lbl">{bi('الصفحات', 'Pages')}</p>{pages}<a href="{R}work.html">{bi(*C.ALL_HEAD)}</a></nav>
+    <nav class="ft-col" aria-label="Pages"><p class="lbl">{bi('الصفحات', 'Pages')}</p>{pages}</nav>
     <nav class="ft-col" aria-label="Services"><p class="lbl">{bi('الخدمات', 'Services')}</p>{svcs}</nav>
     <nav class="ft-col" aria-label="Social"><p class="lbl">{bi('في كل مكان', 'Elsewhere')}</p>{soc}</nav>
   </div>
@@ -265,9 +271,9 @@ def offer():
 '''
 
 
-def page(body_cls, title, desc, path, main, R='', og=None):
+def page(body_cls, title, desc, path, main, R='', og=None, cur=''):
     return (head(title, desc, path, og, R) +
-            '<body class="%s">\n' % body_cls + header(R) +
+            '<body class="%s">\n' % body_cls + header(R, cur) +
             '<main id="main">\n' + main + '\n</main>\n' + footer(R) + offer() +
             '<div class="cur" aria-hidden="true"><span class="cur-l">%s</span></div>\n' % bi('شوف', 'View') +
             '<div class="wipe" aria-hidden="true"></div>\n'
@@ -336,8 +342,8 @@ def contact(R=''):
                   for k, a, en, u in C.SOCIAL if u and k != 'email')
     return f'''<section class="contact" id="contact">
   <div class="wrap">
-    <p class="kick"><i>(06)</i>{bi('تواصل', 'Contact')}</p>
-    <h2 class="contact-h">{bi(C.CONTACT_AR, C.CONTACT_EN)}</h2>
+    <p class="kick"><i>(—)</i>{bi('تواصل', 'Contact')}</p>
+    <h1 class="contact-h">{bi(C.CONTACT_AR, C.CONTACT_EN)}</h1>
     <div class="contact-g">
       {ask_block()}
       {lead_form()}
@@ -350,26 +356,26 @@ def contact(R=''):
 </section>'''
 
 
-def process():
+def process(kick='(04)'):
     steps = ''.join(
         '<li class="st"><span class="st-n">%02d</span><h3>%s</h3><p>%s</p></li>'
         % (i + 1, bi(a, en), bi(da, de)) for i, (a, en, da, de) in enumerate(C.PROCESS))
     return f'''<section class="proc" id="process">
   <div class="wrap">
-    <div class="sh"><p class="kick"><i>(04)</i>{bi(*C.SVC_HOW_HEAD)}</p>
+    <div class="sh"><p class="kick"><i>{kick}</i>{bi(*C.SVC_HOW_HEAD)}</p>
     <h2 class="h2">{bi('أربع خطوات.<br>ولا مفاجأة.', 'Four steps.<br>No surprises.')}</h2></div>
     <div class="steps-w rv"><span class="steps-line" aria-hidden="true"></span><ol class="steps">{steps}</ol></div>
   </div>
 </section>'''
 
 
-def faq():
+def faq(kick='(05)'):
     items = ''.join(
         '<details class="fq"><summary>%s<span class="fq-i" aria-hidden="true"></span></summary><div class="fq-a">%s</div></details>'
         % (bi(qa, qe), bi(aa, ae)) for qa, qe, aa, ae in C.FAQ)
     return f'''<section class="faq" id="faq">
   <div class="wrap faq-g">
-    <div class="sh"><p class="kick"><i>(05)</i>{bi('أسئلة', 'FAQ')}</p><h2 class="h2">{bi(*C.FAQ_HEAD)}</h2></div>
+    <div class="sh"><p class="kick"><i>{kick}</i>{bi('أسئلة', 'FAQ')}</p><h2 class="h2">{bi(*C.FAQ_HEAD)}</h2></div>
     <div class="fq-l">{items}</div>
   </div>
 </section>'''
@@ -381,10 +387,74 @@ def cta_band(ar, en, R=''):
     <h2 class="band-h">{bi(ar, en)}</h2>
     <div class="band-a">
       <a class="btn btn-k btn-xl" href="{C.WA}" target="_blank" rel="noopener">{WA_ICON}{bi(*C.CONTACT_BTN)}</a>
-      <a class="btn btn-t" href="{R}index.html#contact">{bi('أو سيب بياناتك', 'Or leave your details')}{ARROW}</a>
+      <a class="btn btn-t" href="{R}contact.html">{bi('أو سيب بياناتك', 'Or leave your details')}{ARROW}</a>
     </div>
   </div>
 </section>'''
+
+
+# ---------------------------------------------------------------- shared
+# Ten projects for the archive page, picked for range: social, identity,
+# logo and art direction, across the years. Every project is still one
+# click away on the Projects page.
+ARCHIVE = ['food-and-beverage', 'real-estate', 'yalla-masyaf', 'strike', 'pizza-restaurant',
+           'iman-abdel-ghani', 'capital-football-academy', 'hoops-ablaze',
+           'engineering-consultancy', 'lawyer-logo']
+
+
+def pg_hero(kick_n, kick, title, sub='', extra='', vh='.3'):
+    """The top of every inner page: a kicker, the page name set to the full
+    width (capped by height so a short Arabic word does not fill the
+    screen), and a line under it."""
+    return f'''<section class="pg-hero">
+  <div class="wrap">
+    <p class="kick"><i>{kick_n}</i>{kick}</p>
+    <h1 class="pg-h"><span class="fit" data-fit data-vh-ar="{vh}" data-vh-en="{vh}">{title}</span></h1>
+    <div class="pg-sub">{sub}{extra}</div>
+  </div>
+</section>'''
+
+
+def about_block(R=''):
+    facts = ''.join('<div class="fact"><dt>%s</dt><dd>%s</dd></div>' % (bi(a, b), bi(c, d))
+                    for a, b, c, d in C.ABOUT_FACTS)
+    stats = ''.join(
+        '<div class="stat"><b data-n="%d"%s>%d</b><span>%s</span></div>'
+        % ((C.PROJECT_COUNT or N) if n is None else n, ' data-pre="%s"' % pre if pre else '',
+           (C.PROJECT_COUNT or N) if n is None else n, bi(a, en))
+        for n, pre, a, en in C.STATS)
+    return f'''<section class="about" id="about">
+  <div class="wrap about-g">
+    <figure class="about-ph rv"><img src="{R}images/profile.jpg" alt="{e(C.NAME[1])}" width="900" height="1125" loading="lazy" decoding="async"><figcaption class="mono">{bi(*C.NAME)} <i>—</i> {bi(*C.CITY)}</figcaption></figure>
+    <div class="about-c">
+      <p class="kick"><i>(01)</i>{bi('مين أنا', 'Who I am')}</p>
+      <p class="about-lead">{bi(*C.ABOUT_LEAD)}</p>
+      <p class="about-body">{bi(*C.ABOUT_BODY)}</p>
+      <dl class="facts">{facts}</dl>
+    </div>
+  </div>
+  <div class="wrap stats">{stats}</div>
+</section>'''
+
+
+def service_cards(R=''):
+    cards = []
+    for i, (n, ar, en, ard, end, price, tar, ten, _icon) in enumerate(C.SERVICES):
+        sp = C.SERVICE_PAGES[n]
+        inc = ''.join('<li>%s</li>' % bi(a, b) for a, b in sp['inc'])
+        cards.append(f'''<article class="sv sv-{i + 1}">
+  <div class="sv-top"><span class="sv-n">{n}</span><span>{bi(ar, en)}</span><span class="ltr">{price}</span></div>
+  <div class="sv-in">
+    <div class="sv-a"><h2 class="sv-t">{bi(ar, en)}</h2><p class="sv-d">{bi(ard, end)}</p></div>
+    <div class="sv-b">
+      <p class="sv-price"><span class="ltr">{price}</span><small>{bi(tar, ten)}</small></p>
+      <ul class="sv-inc">{inc}</ul>
+      <div class="sv-cta"><a class="btn btn-k" href="{R}services/{sp['slug']}.html">{bi('التفاصيل', 'Details')}{ARROW}</a>
+      <a class="btn btn-t" href="{R}contact.html?ask={sp['ask']}">{bi(*C.SVC_CTA)}</a></div>
+    </div>
+  </div>
+</article>''')
+    return '<div class="sv-stack">%s</div>' % ''.join(cards)
 
 
 # ---------------------------------------------------------------- home
@@ -397,9 +467,6 @@ def home():
                      'food-and-beverage', 'nabae-alaser', 'hoops-ablaze', 'capital-football-academy',
                      'yalla-masyaf', 'iman-abdel-ghani', 'pizza-restaurant'])
 
-    hero_line = bi(' '.join(C.HERO_AR), ' '.join(C.HERO_EN))
-
-    # --- the reel
     panels = []
     for i, (slug, idx) in enumerate(FEATURE):
         p = BY[slug]
@@ -416,48 +483,11 @@ def home():
   <span class="rl-end-t">{bi('شوف كل<br>المشاريع', 'See every<br>project')}</span>{ARROW}
 </a>''')
 
-    # --- index rows
-    rows = []
-    for i, p in enumerate(P):
-        m = cover(p, shape='any')
-        rows.append(f'''<li class="ix-r" data-cat="{p['cat']}"><a href="work/{p['slug']}.html" data-img="{img(cover(p), 'sm')}" data-cur>
-  <span class="ix-n">{num(i + 1)}</span>
-  <span class="ix-th">{picture(m, size='sm')}</span>
-  <span class="ix-t">{bi(p['ar'], p['en'])}</span>
-  <span class="ix-c">{bi(*cat(p))}</span>
-  <span class="ix-y">{year(p)}</span>
-  {ARROW}</a></li>''')
-    counts = {k: sum(1 for p in P if p['cat'] == k) for k in C.CATS}
-    chips = ('<button type="button" class="chip on" data-f="all">%s<sup>%d</sup></button>' % (bi('الكل', 'All'), N) +
-             ''.join('<button type="button" class="chip" data-f="%s">%s<sup>%d</sup></button>'
-                     % (k, bi(*v), counts[k]) for k, v in C.CATS.items() if counts[k]))
-
-    # --- services
-    cards = []
-    for i, (n, ar, en, ard, end, price, tar, ten, _icon) in enumerate(C.SERVICES):
-        sp = C.SERVICE_PAGES[n]
-        inc = ''.join('<li>%s</li>' % bi(a, b) for a, b in sp['inc'])
-        cards.append(f'''<article class="sv sv-{i + 1}">
-  <div class="sv-top"><span class="sv-n">{n}</span><span>{bi(ar, en)}</span><span class="ltr">{price}</span></div>
-  <div class="sv-in">
-    <div class="sv-a"><h3 class="sv-t">{bi(ar, en)}</h3><p class="sv-d">{bi(ard, end)}</p></div>
-    <div class="sv-b">
-      <p class="sv-price"><span class="ltr">{price}</span><small>{bi(tar, ten)}</small></p>
-      <ul class="sv-inc">{inc}</ul>
-      <div class="sv-cta"><a class="btn btn-k" href="services/{sp['slug']}.html">{bi('التفاصيل', 'Details')}{ARROW}</a>
-      <a class="btn btn-t" href="#contact" data-ask="{sp['ask']}">{bi(*C.SVC_CTA)}</a></div>
-    </div>
-  </div>
-</article>''')
-
-    # --- about
-    facts = ''.join('<div class="fact"><dt>%s</dt><dd>%s</dd></div>' % (bi(a, b), bi(c, d))
-                    for a, b, c, d in C.ABOUT_FACTS)
-    stats = ''.join(
-        '<div class="stat"><b data-n="%d"%s>%d</b><span>%s</span></div>'
-        % ((C.PROJECT_COUNT or N) if n is None else n, ' data-pre="%s"' % pre if pre else '',
-           (C.PROJECT_COUNT or N) if n is None else n, bi(a, en))
-        for n, pre, a, en in C.STATS)
+    svl = ''.join(
+        f'''<li><a class="svl-r" href="services/{C.SERVICE_PAGES[n]['slug']}.html">
+  <span class="svl-n">{n}</span><span class="svl-t">{bi(ar, en)}</span>
+  <span class="svl-s">{bi(*C.SERVICE_PAGES[n]['short'])}</span><span class="svl-p ltr">{price}</span>{ARROW}</a></li>'''
+        for n, ar, en, ard, end, price, tar, ten, _ in C.SERVICES)
 
     cats_ar = [v[0] for v in C.CATS.values()]
     cats_en = [v[1] for v in C.CATS.values()]
@@ -500,55 +530,98 @@ def home():
 <section class="reel" id="work">
   <div class="reel-st">
     <div class="wrap reel-hd">
-      <p class="kick"><i>(02)</i>{bi(*C.WORK_HEAD)}</p>
-      <h2 class="h2">{bi('شغل مختار', 'Selected work')}</h2>
+      <div><p class="kick"><i>(02)</i>{bi(*C.WORK_HEAD)}</p>
+      <h2 class="h2">{bi('شغل مختار', 'Selected work')}</h2></div>
       <div class="reel-pg"><span class="reel-c" id="reelC">01</span><span class="reel-bar"><i id="reelBar"></i></span><span>{len(FEATURE):02d}</span></div>
     </div>
     <div class="reel-tr" id="reelTr">{''.join(panels)}</div>
   </div>
 </section>
 
-<section class="ix" id="index">
-  <div class="wrap">
-    <div class="ix-hd">
-      <h2 class="ix-h">{bi('الأرشيف', 'Index')}<sup>({N})</sup></h2>
-      <p class="ix-note">{bi(*C.ALL_NOTE)}</p>
-      <div class="chips ix-f" role="group" aria-label="Filter">{chips}</div>
-    </div>
-    <ol class="ix-l" id="ixL">{''.join(rows)}</ol>
-  </div>
-  <div class="ix-pv" id="ixPv" aria-hidden="true"><img alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" width="10" height="10"></div>
-</section>
-
-<section class="svc" id="services">
+<section class="svl">
   <div class="wrap">
     <div class="sh sh-row"><div><p class="kick"><i>(03)</i>{bi(*C.SERVICES_HEAD)}</p>
       <h2 class="h2">{bi('تلات حاجات.<br>بعملها كويس جداً.', 'Three things.<br>Done properly.')}</h2></div>
-      <p class="sh-note">{bi(*C.SERVICES_NOTE)}</p></div>
-    <div class="sv-stack">{''.join(cards)}</div>
+      <a class="btn btn-t" href="services.html">{bi(*C.SVC_ALL)}{ARROW}</a></div>
+    <ol class="svl-l">{svl}</ol>
   </div>
 </section>
 
-{process()}
-
-<section class="about" id="about">
-  <div class="wrap about-g">
-    <figure class="about-ph rv"><img src="images/profile.jpg" alt="{e(C.NAME[1])}" width="900" height="1125" loading="lazy" decoding="async"><figcaption class="mono">{bi(*C.NAME)} <i>—</i> {bi(*C.CITY)}</figcaption></figure>
-    <div class="about-c">
-      <p class="kick"><i>(—)</i>{bi(*C.ABOUT_HEAD)}</p>
+<section class="abt">
+  <div class="wrap abt-g">
+    <figure class="abt-ph rv"><img src="images/profile.jpg" alt="{e(C.NAME[1])}" width="900" height="1125" loading="lazy" decoding="async"></figure>
+    <div class="abt-c">
+      <p class="kick"><i>(04)</i>{bi(*C.ABOUT_HEAD)}</p>
       <p class="about-lead">{bi(*C.ABOUT_LEAD)}</p>
-      <p class="about-body">{bi(*C.ABOUT_BODY)}</p>
-      <dl class="facts">{facts}</dl>
+      <a class="btn btn-o" href="about.html">{bi('اعرفني أكتر', 'More about me')}{ARROW}</a>
     </div>
   </div>
-  <div class="wrap stats">{stats}</div>
 </section>
 
-{faq()}
-
-{contact()}
+{cta_band(C.CONTACT_AR, C.CONTACT_EN)}
 '''
-    return page('pg-home', C.TITLE_HOME, seo(C.DESC_HOME), '', main)
+    return page('pg-home', C.TITLE_HOME, seo(C.DESC_HOME), '', main, cur='home')
+
+
+# ---------------------------------------------------------------- about
+def about_page():
+    main = (pg_hero('(—)', bi(*C.ABOUT_HEAD), bi('عني', 'About'),
+                    '<p>%s</p>' % bi(C.SEO_JOB_AR + ' — ' + C.CITY[0], C.SEO_JOB_EN + ' — ' + C.CITY[1]))
+            + about_block() + process('(02)') + cta_band(C.CONTACT_AR, C.CONTACT_EN))
+    title = 'عني — %s | About — %s' % (C.NAME[0], C.NAME[1])
+    return page('pg-about', title, '%s %s' % C.ABOUT_LEAD, 'about.html', main, cur='about')
+
+
+# ---------------------------------------------------------------- archive
+def archive_page():
+    items = [BY[s] for s in ARCHIVE]
+    rows, shots = [], []
+    for i, p in enumerate(items):
+        m = cover(p)
+        rows.append(f'''<li><a class="arc-r" href="work/{p['slug']}.html" data-i="{i}" data-cur>
+  <span class="arc-n">{num(i + 1)}</span>
+  <span class="arc-th">{picture(cover(p, shape='any'), size='sm')}</span>
+  <span class="arc-t">{bi(p['ar'], p['en'])}</span>
+  <span class="arc-c">{bi(*cat(p))}</span>
+  <span class="arc-y">{year(p)}</span>{ARROW}</a></li>''')
+        shots.append(f'''<figure class="arc-s{' on' if i == 0 else ''}" data-i="{i}">
+  <span class="arc-img">{picture(m, alt='', size='1400', sizes='40vw')}</span>
+  <figcaption><b>{bi(p['ar'], p['en'])}</b><span>{bi(p['arl'], p['enl'])}</span>
+  <i class="mono">{len(p['mods'])} {bi('قطعة', 'pieces')}</i></figcaption></figure>''')
+    sub = '<p>%s</p>' % bi('عشرة مشاريع من الأرشيف، كل واحد ليه صفحة بالتفاصيل والقطع كاملة.',
+                           'Ten projects from the archive, each with a page of its own and the full set of work.')
+    extra = '<a class="btn btn-t" href="work.html">%s%s</a>' % (
+        bi('كل المشاريع (%s)' % str(N).translate(AR_DIGITS), 'All %d projects' % N), ARROW)
+    main = (pg_hero('(10)', bi('من الأرشيف', 'From the archive'), bi('الأرشيف', 'Archive'), sub, extra)
+            + f'''<section class="arc"><div class="wrap arc-g">
+  <ol class="arc-l" id="arcL">{''.join(rows)}</ol>
+  <div class="arc-pv" aria-hidden="true">{''.join(shots)}</div>
+</div></section>''' + cta_band(C.CASE_CTA_AR, C.CASE_CTA_EN))
+    title = 'الأرشيف — %s | Archive — %s' % (C.NAME[0], C.NAME[1])
+    return page('pg-archive', title, 'Ten projects from the archive of %s.' % C.NAME[1], 'archive.html', main, cur='archive')
+
+
+# ---------------------------------------------------------------- services overview
+def services_page():
+    dv = ''.join('<li class="dv rv"><span class="dv-n">%02d</span><h3>%s</h3><p>%s</p></li>' % (i + 1, bi(a, b), bi(c, d))
+                 for i, (a, b, c, d, _icon) in enumerate(C.DELIVER))
+    main = (pg_hero('(03)', bi('اللي بعمله', 'What I do'), bi(*C.SERVICES_HEAD),
+                    '<p>%s</p>' % bi(*C.SERVICES_NOTE))
+            + f'''<section class="svc"><div class="wrap">{service_cards()}</div></section>
+<section class="dlv"><div class="wrap">
+  <div class="sh sh-row"><div><p class="kick"><i>(02)</i>{bi(*C.DELIVER_HEAD)}</p>
+  <h2 class="h2">{bi(*C.DELIVER_NOTE)}</h2></div></div>
+  <ol class="dv-l">{dv}</ol>
+</div></section>'''
+            + process('(03)') + faq('(04)') + cta_band(C.CASE_CTA_AR, C.CASE_CTA_EN))
+    title = 'الخدمات — %s | Services — %s' % (C.NAME[0], C.NAME[1])
+    return page('pg-services', title, '%s %s' % C.SERVICES_NOTE, 'services.html', main, cur='services')
+
+
+# ---------------------------------------------------------------- contact
+def contact_page():
+    title = 'تواصل — %s | Contact — %s' % (C.NAME[0], C.NAME[1])
+    return page('pg-contact', title, '%s %s' % C.FORM_TITLE, 'contact.html', contact(), cur='contact')
 
 
 # ---------------------------------------------------------------- work index
@@ -565,17 +638,12 @@ def work_index():
   <span class="wk-cap"><span class="wk-n">{num(i + 1)}</span><span class="wk-t">{bi(p['ar'], p['en'])}</span><span class="wk-c">{bi(*cat(p))} · {year(p)}</span></span>
 </a></li>''')
     main = f'''
-<section class="pg-hero">
-  <div class="wrap">
-    <p class="kick"><i>({N})</i>{bi('مشروع منشور', 'Published projects')}</p>
-    <h1 class="pg-h"><span class="fit" data-fit>{bi(*C.ALL_HEAD)}</span></h1>
-    <div class="pg-sub"><p>{bi(*C.ALL_NOTE)}</p><div class="chips ix-f" role="group" aria-label="Filter">{chips}</div></div>
-  </div>
-</section>
+{pg_hero('(%d)' % N, bi('مشروع منشور', 'Published projects'), bi('المشاريع', 'Projects'),
+          '<p>%s</p>' % bi(*C.ALL_NOTE), '<div class="chips ix-f" role="group" aria-label="Filter">%s</div>' % chips)}
 <section class="wk-s"><div class="wrap"><ol class="wk-g" id="wkG">{''.join(cards)}</ol></div></section>
 {cta_band(C.CASE_CTA_AR, C.CASE_CTA_EN)}
 '''
-    return page('pg-work', C.TITLE_WORK, seo(C.DESC_WORK), 'work.html', main)
+    return page('pg-work', C.TITLE_WORK, seo(C.DESC_WORK), 'work.html', main, cur='work')
 
 
 # ---------------------------------------------------------------- case study
@@ -673,7 +741,7 @@ def case(p, i, prev, nxt):
 '''
     title = '%s — %s | %s — %s' % (p['ar'], C.NAME[0], p['en'], C.NAME[1])
     return page('pg-case', title, '%s %s' % (p['arl'], p['enl']), 'work/%s.html' % p['slug'],
-                main, R='../', og=img(m))
+                main, R='../', og=img(m), cur='work')
 
 
 # ---------------------------------------------------------------- service
@@ -689,13 +757,13 @@ def service(s):
     main = f'''
 <section class="sp-hero">
   <div class="wrap">
-    <a class="back mono" href="../index.html#services">{BACK}{bi(*C.SVC_ALL)}</a>
+    <a class="back mono" href="../services.html">{BACK}{bi(*C.SVC_ALL)}</a>
     <p class="kick"><i>{n}</i>{bi('خدمة', 'Service')}</p>
     <h1 class="sp-h"><span class="fit" data-fit data-max="240">{bi(ar, en)}</span></h1>
     <div class="sp-g">
       <p class="sp-d">{bi(ard, end)}</p>
       <div class="sp-p"><span class="ltr">{price}</span><small>{bi(tar, ten)}</small></div>
-      <div class="sp-a"><a class="btn btn-o btn-xl" href="../index.html?ask={sp['ask']}#contact">{bi(*C.SVC_CTA)}{ARROW}</a>
+      <div class="sp-a"><a class="btn btn-o btn-xl" href="../contact.html?ask={sp['ask']}">{bi(*C.SVC_CTA)}{ARROW}</a>
       <a class="btn btn-t" href="{C.WA}" target="_blank" rel="noopener">{WA_ICON}{bi('واتساب', 'WhatsApp')}</a></div>
     </div>
   </div>
@@ -708,7 +776,7 @@ def service(s):
 {cta_band(C.CASE_CTA_AR, C.CASE_CTA_EN, '../')}
 '''
     title = '%s — %s | %s — %s' % (ar, C.NAME[0], en, C.NAME[1])
-    return page('pg-svc', title, '%s %s' % (ard, end), 'services/%s.html' % sp['slug'], main, R='../')
+    return page('pg-svc', title, '%s %s' % (ard, end), 'services/%s.html' % sp['slug'], main, R='../', cur='services')
 
 
 def notfound():
@@ -746,12 +814,16 @@ def main():
     shutil.copy(os.path.join(SRC, 'site.js'), os.path.join(OUT, 'js', 'site.js'))
     write('index.html', home())
     write('work.html', work_index())
+    write('about.html', about_page())
+    write('archive.html', archive_page())
+    write('services.html', services_page())
+    write('contact.html', contact_page())
     for i, p in enumerate(P):
         write('work/%s.html' % p['slug'], case(p, i, P[i - 1], P[(i + 1) % N]))
     for s in C.SERVICES:
         write('services/%s.html' % C.SERVICE_PAGES[s[0]]['slug'], service(s))
     write('404.html', notfound())
-    print('built _next/site: index, work, %d case studies, %d service pages, 404' % (N, len(C.SERVICES)))
+    print('built _next/site: 6 main pages, %d case studies, %d service pages, 404' % (N, len(C.SERVICES)))
 
 
 if __name__ == '__main__':

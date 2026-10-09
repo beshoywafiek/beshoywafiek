@@ -244,28 +244,22 @@
       measure();
     });
   });
-  var pv = $('#ixPv');
-  if (pv && fine && !reduce) {
-    var pimg = $('img', pv), px = 0, py = 0, qx = 0, qy = 0, pvRun = false, pvOn = false;
-    function pvLoop() {
-      qx += (px - qx) * 0.16; qy += (py - qy) * 0.16;
-      pv.style.transform = 'translate3d(' + (qx + 28).toFixed(1) + 'px,' + (qy - pv.offsetHeight / 2).toFixed(1) + 'px,0) rotate(' + ((px - qx) * 0.03).toFixed(2) + 'deg)';
-      if (pvOn || Math.abs(px - qx) > .2) requestAnimationFrame(pvLoop); else pvRun = false;
+  /* ---------------- archive: the preview follows the row in focus ---------------- */
+  var arcL = $('#arcL');
+  if (arcL) {
+    var rowsA = $$('.arc-r', arcL), shotsA = $$('.arc-s');
+    function showArc(i) {
+      rowsA.forEach(function (r) { r.classList.toggle('on', r.getAttribute('data-i') === i); });
+      shotsA.forEach(function (f) { f.classList.toggle('on', f.getAttribute('data-i') === i); });
     }
-    var list = $('#ixL');
-    list.addEventListener('pointerover', function (e) {
-      var a = e.target.closest('a[data-img]'); if (!a) return;
-      var src = a.getAttribute('data-img');
-      if (pimg.getAttribute('src') !== src) pimg.src = src;
-      pvOn = true; pv.classList.add('on');
-      if (!pvRun) { pvRun = true; qx = px; qy = py; requestAnimationFrame(pvLoop); }
+    showArc('0');
+    ['pointerover', 'focusin'].forEach(function (ev) {
+      arcL.addEventListener(ev, function (e) {
+        var r = e.target.closest('.arc-r'); if (r) showArc(r.getAttribute('data-i'));
+      });
     });
-    list.addEventListener('pointerleave', function () { pvOn = false; pv.classList.remove('on'); });
-    list.addEventListener('pointermove', function (e) {
-      px = isRtl() ? e.clientX - pv.offsetWidth - 56 : e.clientX; py = e.clientY;
-    }, { passive: true });
-    // warm the cache so the first hover is not empty
-    setTimeout(function () { $$('a[data-img]', list).forEach(function (a) { var i = new Image(); i.src = a.getAttribute('data-img'); }); }, 2500);
+    // fetch the large images once the list is idle, so a hover is never empty
+    setTimeout(function () { $$('.arc-s img').forEach(function (i) { i.loading = 'eager'; }); }, 1200);
   }
 
   /* ---------------- counters ---------------- */

@@ -17,23 +17,27 @@ const { chromium } = require('playwright');
   for (let i = 0; i < 30; i++) await p.mouse.move(100 + i * 40, 300 + (i % 5) * 30);
   await p.waitForTimeout(300);
   const trailOn = await p.evaluate(() => [...document.querySelectorAll('.hero-trail img')].some(i => getComputedStyle(i).opacity > 0.1));
-  await p.locator('#ixL a').nth(3).hover(); await p.waitForTimeout(400);
-  const pv = await p.evaluate(() => document.getElementById('ixPv').classList.contains('on'));
+  const navCount = await p.evaluate(() => document.querySelectorAll('.hd-nav a').length);
+  await p.waitForTimeout(3200);
+  const offer = await p.evaluate(() => !document.getElementById('offer').hidden);
+  const reel = await p.evaluate(async () => { const r = document.querySelector('.reel'); scrollTo(0, r.offsetTop + 1500); await new Promise(x => setTimeout(x, 300)); return document.getElementById('reelTr').style.transform; });
+  console.log({ trailOn, navCount, offer, reel });
+  // archive: the preview follows the row
+  p = await open(1440, '/archive.html', 'en', false);
+  await p.locator('.arc-r').nth(4).hover(); await p.waitForTimeout(300);
+  const arc = await p.evaluate(() => [document.querySelectorAll('.arc-r').length, document.querySelector('.arc-s.on').dataset.i, document.querySelector('.arc-r.on').dataset.i]);
+  // projects: filter
+  p = await open(1440, '/work.html', 'en', false);
   await p.locator('.ix-f .chip[data-f="logo"]').click();
-  const shown = await p.evaluate(() => [...document.querySelectorAll('#ixL .ix-r')].filter(r => r.offsetParent).length);
-  await p.locator('#ask .ask-q').first().locator('.chip').nth(1).click();
+  const logos = await p.evaluate(() => [...document.querySelectorAll('.wk')].filter(r => r.offsetParent).length);
+  // contact: three questions -> message, language switch, ?ask preselect
+  p = await open(1440, '/contact.html?ask=2', 'en', false);
+  const pre = await p.locator('#askMsg').textContent();
+  await p.locator('#ask .ask-q').nth(1).locator('.chip').first().click();
   const msg = await p.locator('#askMsg').textContent();
-  const href = await p.locator('#waBtn').getAttribute('href');
   await p.evaluate(() => document.getElementById('lang').click()); await p.waitForTimeout(300);
   const msgAr = await p.locator('#askMsg').textContent();
-  const dir = await p.evaluate(() => document.documentElement.dir);
-  // offer appears after its delay
-  await p.waitForTimeout(3200);
-  const offer = await p.evaluate(() => { const o = document.getElementById('offer'); return !o.hidden; });
-  console.log({ trailOn, pv, logoRows: shown, msg, href: href.slice(0, 60), msgAr, dir, offer });
-  // reel moves with scroll
-  const reel = await p.evaluate(async () => { const r = document.querySelector('.reel'); scrollTo(0, r.offsetTop + 1500); await new Promise(x => setTimeout(x, 300)); return document.getElementById('reelTr').style.transform; });
-  console.log('reel', reel);
+  console.log({ archiveRows: arc[0], previewFollows: arc[1] === '4' && arc[2] === '4', logos, pre, msg, msgAr });
   // phone menu
   p = await open(390, '/index.html', 'ar', true);
   await p.click('#burger'); await p.waitForTimeout(500);
