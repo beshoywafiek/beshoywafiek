@@ -53,7 +53,13 @@
      The observer watches the container, never an element that clip-path has
      collapsed to zero height — a clipped element reports ratio 0 forever and
      the card stays blank. That bug cost an afternoon; see .rv in the CSS. */
-  var targets = document.querySelectorAll('.up, .rv, .mega, .shead');
+  /* Section heads rise only on a desktop (style.css: .reveal-heads). They are
+     not even observed on a phone: observing them there shifted the phone's
+     text rendering by a sub-pixel, and the phone is kept exactly as it was.
+     A page opened narrow and widened later simply shows its heads. */
+  var wideHeads = matchMedia('(min-width: 861px)').matches;
+  if (wideHeads) document.documentElement.classList.add('reveal-heads');
+  var targets = document.querySelectorAll(wideHeads ? '.up, .rv, .mega, .shead' : '.up, .rv, .mega');
   if ('IntersectionObserver' in window && targets.length) {
     var io = new IntersectionObserver(function (es) {
       es.forEach(function (e) {
