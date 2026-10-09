@@ -81,6 +81,16 @@ invented testimonials, metrics or client claims, however a skill frames them.
 Skills that write `PRODUCT.md`, `DESIGN.md` or `design-system/` at the root are
 fine — `_config.yml` keeps those off the live site.
 
+## `_next/` — the new site, in progress (owner's choice, Oct 2026)
+
+The owner asked for a new project with a completely different layout instead
+of more changes to this one. It lives in `_next/` (underscore: not published,
+and excluded in `_config.yml`; `links.js` skips it). It reuses `content.py`,
+`meta.py` and `js/projects.json` so copy stays in one place, and has its own
+`build.py`, `src/` and review tools — see `_next/README.md`. Nothing in it
+touches the live site. Until he approves it, the rules above still govern the
+root; the same performance, RTL and content rules apply inside `_next/`.
+
 ---
 
 # Rules that were learned the hard way
