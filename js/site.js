@@ -53,7 +53,7 @@
      The observer watches the container, never an element that clip-path has
      collapsed to zero height — a clipped element reports ratio 0 forever and
      the card stays blank. That bug cost an afternoon; see .rv in the CSS. */
-  var targets = document.querySelectorAll('.up, .rv, .mega');
+  var targets = document.querySelectorAll('.up, .rv, .mega, .shead');
   if ('IntersectionObserver' in window && targets.length) {
     var io = new IntersectionObserver(function (es) {
       es.forEach(function (e) {

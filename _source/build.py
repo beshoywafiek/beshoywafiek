@@ -310,6 +310,7 @@ def footer():
 
     return f'''
 <footer class="foot">
+  <p class="ft-big up" aria-hidden="true">{bi(C.NAME[0], C.NAME[1])}</p>
   <div class="wrap foot-in">
     <span>© <span id="yr"></span> {C.NAME[1]} — {C.CITY[1]}</span>
     <div class="foot-l">{FOOT_SOCIAL}</div>
