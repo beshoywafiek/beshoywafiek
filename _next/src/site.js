@@ -13,6 +13,7 @@
   var lang = function () { return root.getAttribute('lang') === 'en' ? 'en' : 'ar'; };
   var $ = function (s, c) { return (c || document).querySelector(s); };
   var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+  var WA = (document.querySelector('a[href^="https://wa.me/"]') || { href: 'https://wa.me/201273874839' }).href.split('?')[0];
   var store = {
     get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
     set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
@@ -123,7 +124,7 @@
     ticking = false;
     var y = scrollY;
     // header hides going down, returns going up
-    if (hd && !document.body.classList.contains('menu-open')) {
+    if (hd && !/menu-open|locked/.test(document.body.className)) {
       if (y > 160 && y > lastY + 4) hd.classList.add('hide');
       else if (y < lastY - 4 || y < 160) hd.classList.remove('hide');
     }
@@ -290,6 +291,8 @@
   /* ---------------- the three questions -> one message ---------------- */
   var ask = $('#ask'), waBtn = $('#waBtn'), askMsg = $('#askMsg');
   function compose() {
+    var og = $('#offerGo'), of = $('#offerF');
+    if (og && of) og.href = WA + '?text=' + encodeURIComponent(of.getAttribute('data-wa-' + lang()));
     if (!ask) return;
     var l = lang(), picked = $$('.ask-q', ask).map(function (q) {
       var on = $('.chip.on', q); return on ? on.getAttribute('data-' + l) : null;
@@ -302,8 +305,6 @@
     }
     if (askMsg) { askMsg.textContent = text; }
     if (waBtn) waBtn.href = waBtn.href.split('?')[0] + '?text=' + encodeURIComponent(text);
-    var og = $('#offerGo');
-    if (og) og.href = og.href.split('?')[0] + '?text=' + encodeURIComponent(og.getAttribute('data-msg-' + l));
   }
   if (ask) ask.addEventListener('click', function (e) {
     var c = e.target.closest('.chip'); if (!c) return;
@@ -325,46 +326,52 @@
   var qa = new URLSearchParams(location.search).get('ask');
   if (qa !== null && /^\d+$/.test(qa)) pick(+qa);
 
-  /* ---------------- the lead form ----------------
-     Posts to his Google Apps Script when FORM_ENDPOINT is set; until then,
-     and whenever a send fails, the same details go to WhatsApp. */
-  var form = $('#lead');
-  if (form) {
-    var msg = $('#leadMsg'), btn = $('#leadBtn'), endpoint = (form.getAttribute('data-endpoint') || '').trim();
+  /* ---------------- the forms ----------------
+     The contact form and the offer's form both post to his Google Apps
+     Script (FORM_ENDPOINT) so every lead lands in his sheet. Until that is
+     set, and whenever a send fails, the same details go to WhatsApp, so no
+     lead is ever lost. */
+  $$('form.lead-f').forEach(function (form) {
+    var msg = $('.lead-msg', form), btn = $('button[type="submit"]', form);
+    var endpoint = (form.getAttribute('data-endpoint') || '').trim();
     var t = function (k) { return form.getAttribute('data-' + k + '-' + lang()) || ''; };
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
       var data = {};
       $$('input', form).forEach(function (i) { data[i.name] = i.value.trim(); });
+      // the honeypot: a person never sees it, so anything there is a bot;
+      // pretend it worked rather than tell the bot what to change
       if (data.website) { form.classList.add('sent'); msg.className = 'lead-msg ok'; msg.textContent = t('ok'); return; }
       delete data.website;
       if (!data.name || !data.phone) {
         msg.className = 'lead-msg bad';
         msg.textContent = lang() === 'en' ? 'Name and WhatsApp number, please.' : 'محتاج الاسم ورقم الواتساب.';
+        ($('input:invalid', form) || $('input', form)).focus();
         return;
       }
-      data.needs = $$('.ask .chip.on').map(function (c) { return c.getAttribute('data-ar'); }).join(' / ');
+      data.needs = form.getAttribute('data-needs') ||
+        $$('.ask .chip.on').map(function (c) { return c.getAttribute('data-ar'); }).join(' / ');
       data.lang = lang(); data.page = location.pathname; data.referrer = document.referrer || 'direct';
       data.at = new Date().toISOString();
       function toWhatsApp() {
-        var line = data.name + ' — ' + data.phone + (data.needs ? ' — ' + data.needs : '');
-        var base = waBtn ? waBtn.href.split('?')[0] : 'https://wa.me/201273874839';
-        window.open(base + '?text=' + encodeURIComponent(line), '_blank', 'noopener');
+        var lead = form.getAttribute('data-wa-' + lang());
+        var line = (lead ? lead + '\n' : '') + data.name + ' — ' + data.phone + (!lead && data.needs ? ' — ' + data.needs : '');
+        window.open(WA + '?text=' + encodeURIComponent(line), '_blank', 'noopener');
       }
-      if (!endpoint) { toWhatsApp(); return; }
-      btn.disabled = true; msg.className = 'lead-msg'; msg.textContent = t('busy');
-      var done = false;
       function finish(ok) {
-        if (done) return; done = true; btn.disabled = false;
+        btn.disabled = false;
         msg.className = 'lead-msg ' + (ok ? 'ok' : 'bad'); msg.textContent = ok ? t('ok') : t('err');
         if (ok) form.classList.add('sent'); else toWhatsApp();
+        form.dispatchEvent(new CustomEvent('lead', { detail: ok }));
       }
-      var guard = setTimeout(function () { finish(false); }, 9000);
+      if (!endpoint) { toWhatsApp(); form.dispatchEvent(new CustomEvent('lead', { detail: true })); return; }
+      btn.disabled = true; msg.className = 'lead-msg'; msg.textContent = t('busy');
+      var done = false, guard = setTimeout(function () { if (!done) { done = true; finish(false); } }, 9000);
       fetch(endpoint, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(data) })
-        .then(function () { clearTimeout(guard); finish(true); })
-        .catch(function () { clearTimeout(guard); finish(false); });
+        .then(function () { if (!done) { done = true; clearTimeout(guard); finish(true); } })
+        .catch(function () { if (!done) { done = true; clearTimeout(guard); finish(false); } });
     });
-  }
+  });
 
   /* ---------------- copy the email ---------------- */
   var copy = $('#copyMail');
@@ -375,26 +382,44 @@
     if (navigator.clipboard) navigator.clipboard.writeText(text).then(ok, sel); else sel();
   });
 
-  /* ---------------- the first-project offer ---------------- */
+  /* ---------------- the first-project offer ----------------
+     A dialog in the middle of the screen after a few seconds. Closing it
+     brings it back in a few days; acting on it (the form or WhatsApp) keeps
+     it away much longer, because that person has already reached out. */
   var offer = $('#offer');
   if (offer) {
     var DAY = 864e5, seen = +store.get('bw_offer_seen') || 0, acted = store.get('bw_offer_acted') === '1';
     var wait = (acted ? +offer.getAttribute('data-acted') : +offer.getAttribute('data-days')) * DAY;
-    var hideOffer = function (didAct) {
+    var card = $('.offer-card', offer), lastFocus = null;
+    var closeOffer = function (didAct) {
       store.set('bw_offer_seen', String(Date.now()));
       store.set('bw_offer_acted', didAct ? '1' : '0');
       offer.classList.remove('on');
-      setTimeout(function () { offer.hidden = true; }, 500);
+      document.body.classList.remove('locked');
+      setTimeout(function () { offer.hidden = true; }, 450);
+      if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
     };
-    if (Date.now() - seen > wait) {
-      setTimeout(function () {
-        if (document.hidden) return;
-        offer.hidden = false; void offer.offsetWidth; offer.classList.add('on');
-      }, (+offer.getAttribute('data-delay') || 3) * 1000);
-    }
-    $('#offerX').addEventListener('click', function () { hideOffer(false); });
-    $('#offerSkip').addEventListener('click', function () { hideOffer(false); });
-    $('#offerGo').addEventListener('click', function () { hideOffer(true); });
+    var openOffer = function () {
+      if (document.hidden || document.body.classList.contains('menu-open')) return;
+      lastFocus = document.activeElement;
+      offer.hidden = false; void offer.offsetWidth; offer.classList.add('on');
+      document.body.classList.add('locked');
+      card.focus({ preventScroll: true });
+    };
+    if (Date.now() - seen > wait) setTimeout(openOffer, (+offer.getAttribute('data-delay') || 5) * 1000);
+    offer.addEventListener('click', function (e) { if (e.target.closest('[data-close]')) closeOffer(false); });
+    $('#offerGo').addEventListener('click', function () { closeOffer(true); });
+    $('#offerF').addEventListener('lead', function (e) { if (e.detail) setTimeout(function () { closeOffer(true); }, 2200); });
+    document.addEventListener('keydown', function (e) {
+      if (offer.hidden) return;
+      if (e.key === 'Escape') closeOffer(false);
+      if (e.key === 'Tab') {                       // keep the focus inside the dialog
+        var f = $$('button, a[href], input:not([tabindex="-1"])', card).filter(function (x) { return x.offsetParent; });
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && (document.activeElement === first || document.activeElement === card)) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
   }
 
   /* ---------------- lightbox on case pages ---------------- */
@@ -410,10 +435,10 @@
       a.addEventListener('click', function (e) {
         if (e.metaKey || e.ctrlKey) return;
         e.preventDefault(); opener = a; lb.hidden = false; show(i); $('.lb-x', lb).focus();
-        document.body.classList.add('menu-open');
+        document.body.classList.add('locked');
       });
     });
-    function closeLb() { lb.hidden = true; lbImg.removeAttribute('src'); document.body.classList.remove('menu-open'); if (opener) opener.focus(); }
+    function closeLb() { lb.hidden = true; lbImg.removeAttribute('src'); document.body.classList.remove('locked'); if (opener) opener.focus(); }
     $('.lb-x', lb).addEventListener('click', closeLb);
     $('.lb-p', lb).addEventListener('click', function () { show(at - 1); });
     $('.lb-n', lb).addEventListener('click', function () { show(at + 1); });

@@ -238,6 +238,13 @@ OFFER_SKIP  = ('مش دلوقتي', 'Not now')
 OFFER_MSG   = ('أهلاً بيشوي، شفت عرض خصم ٣٠٪ لأول تعامل وحابب أعرف تفاصيله.',
                'Hi Beshoy, I saw the 30% first-project offer and would like to know more.')
 OFFER_DELAY = 3          # بعد كام ثانية يظهر
+# الموقع الجديد (_next/): العرض بيظهر كرسالة في نص الشاشة بعد كام ثانية،
+# وفيه خانتين للاسم والرقم بيتسجلوا في جوجل شيت (FORM_ENDPOINT تحت).
+OFFER_DELAY_NEW = 5
+OFFER_FORM  = ('سيب اسمك ورقمك وأنا أبعتلك التفاصيل.',
+               'Leave your name and number and I will send you the details.')
+OFFER_SEND  = ('احجز الخصم', 'Claim the offer')
+OFFER_OK    = ('تمام، وصلتني. هكلمك قريب.', 'Got it. I will be in touch soon.')
 # لو قفله وقال "مش دلوقتي" — يرجع تاني بعد كام يوم.
 # ده الشخص اللي لسه بيفكر، فمنطقي يشوف العرض تاني لما يرجع.
 OFFER_DAYS  = 3

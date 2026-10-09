@@ -255,19 +255,39 @@ def footer(R=''):
 
 
 def offer():
+    """The first-project offer: a dialog in the middle of the screen after a
+    few seconds, with name and number fields that go to the same Google
+    Sheet as the contact form (and to WhatsApp until that is connected)."""
     if not C.OFFER_ON:
         return ''
-    msg = e(C.WA + '?text=')
-    return f'''<aside class="offer" id="offer" hidden data-delay="{C.OFFER_DELAY}" data-days="{C.OFFER_DAYS}" data-acted="{C.OFFER_DAYS_ACTED}" aria-labelledby="offerT">
-  <button class="offer-x" id="offerX" type="button" aria-label="Close">×</button>
-  <p class="lbl">{bi(*C.OFFER_KICK)}</p>
-  <p class="offer-t" id="offerT">{bi(*C.OFFER_TITLE)}</p>
-  <p class="offer-b">{bi(*C.OFFER_BODY)}</p>
-  <div class="offer-a">
-    <a class="btn btn-o" id="offerGo" href="{msg}" data-msg-ar="{e(C.OFFER_MSG[0])}" data-msg-en="{e(C.OFFER_MSG[1])}" target="_blank" rel="noopener">{bi(*C.OFFER_CTA)}</a>
-    <button class="btn btn-t" id="offerSkip" type="button">{bi(*C.OFFER_SKIP)}</button>
+    return f'''<div class="offer" id="offer" hidden role="dialog" aria-modal="true" aria-labelledby="offerT"
+  data-delay="{getattr(C, 'OFFER_DELAY_NEW', C.OFFER_DELAY)}" data-days="{C.OFFER_DAYS}" data-acted="{C.OFFER_DAYS_ACTED}">
+  <div class="offer-bg" data-close></div>
+  <div class="offer-card" tabindex="-1">
+    <button class="offer-x" type="button" data-close aria-label="Close">×</button>
+    <p class="lbl">{bi(*C.OFFER_KICK)}</p>
+    <p class="offer-t" id="offerT">{bi(*C.OFFER_TITLE)}</p>
+    <p class="offer-b">{bi(*C.OFFER_BODY)}</p>
+    <form class="offer-f lead-f" id="offerF" novalidate data-endpoint="{e(C.FORM_ENDPOINT)}"
+      data-needs="{e(C.OFFER_KICK[0] + ' — ' + C.OFFER_TITLE[0])}" data-wa-ar="{e(C.OFFER_MSG[0])}" data-wa-en="{e(C.OFFER_MSG[1])}"
+      data-busy-ar="{e(C.FORM_SENDING[0])}" data-busy-en="{e(C.FORM_SENDING[1])}"
+      data-ok-ar="{e(C.OFFER_OK[0])}" data-ok-en="{e(C.OFFER_OK[1])}"
+      data-err-ar="{e(C.FORM_ERR[0])}" data-err-en="{e(C.FORM_ERR[1])}">
+      <p class="offer-fh">{bi(*C.OFFER_FORM)}</p>
+      <div class="offer-ff">
+        <label class="fld"><span>{bi(C.FORM_FIELDS[0][1], C.FORM_FIELDS[0][2])}</span><input name="name" type="text" required autocomplete="name"></label>
+        <label class="fld"><span>{bi(C.FORM_FIELDS[1][1], C.FORM_FIELDS[1][2])}</span><input name="phone" type="tel" required autocomplete="tel"></label>
+      </div>
+      <label class="hp" aria-hidden="true">Website<input name="website" type="text" tabindex="-1" autocomplete="off"></label>
+      <button class="btn btn-o btn-xl" type="submit">{bi(*C.OFFER_SEND)}{ARROW}</button>
+      <p class="lead-msg" role="status" aria-live="polite"></p>
+    </form>
+    <div class="offer-a">
+      <a class="btn btn-t" id="offerGo" href="{e(C.WA)}" target="_blank" rel="noopener">{WA_ICON}{bi(*C.OFFER_CTA)}</a>
+      <button class="offer-skip" type="button" data-close>{bi(*C.OFFER_SKIP)}</button>
+    </div>
   </div>
-</aside>
+</div>
 '''
 
 
@@ -324,15 +344,15 @@ def lead_form():
         % (bi(la, le), k, t, 'required ' if req else '',
            {'name': 'name', 'phone': 'tel', 'email': 'email'}.get(k, 'on'))
         for k, la, le, t, req in C.FORM_FIELDS)
-    return f'''<form class="lead" id="lead" data-endpoint="{e(C.FORM_ENDPOINT)}" novalidate
+    return f'''<form class="lead lead-f" id="lead" data-endpoint="{e(C.FORM_ENDPOINT)}" novalidate
   data-busy-ar="{e(C.FORM_SENDING[0])}" data-busy-en="{e(C.FORM_SENDING[1])}"
   data-ok-ar="{e(C.FORM_OK[0])}" data-ok-en="{e(C.FORM_OK[1])}"
   data-err-ar="{e(C.FORM_ERR[0])}" data-err-en="{e(C.FORM_ERR[1])}">
   <p class="lead-t">{bi(*C.FORM_TITLE)}</p>
   {fields}
   <label class="hp" aria-hidden="true">Website<input name="website" type="text" tabindex="-1" autocomplete="off"></label>
-  <button class="btn btn-k" id="leadBtn" type="submit">{bi(*C.FORM_SEND)}{ARROW}</button>
-  <p class="lead-msg" id="leadMsg" role="status" aria-live="polite"></p>
+  <button class="btn btn-k" type="submit">{bi(*C.FORM_SEND)}{ARROW}</button>
+  <p class="lead-msg" role="status" aria-live="polite"></p>
   <p class="lead-note">{bi(*C.FORM_NOTE)}</p>
 </form>'''
 

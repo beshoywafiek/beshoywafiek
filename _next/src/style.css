@@ -164,7 +164,7 @@ html[lang="ar"] :is(.mono, .kick, .lbl) { font-family: var(--f-ar); letter-spaci
 .menu-s a { text-decoration: none; font-size: 20px; color: var(--mut-k); padding-block: 4px; }
 .menu-c { margin-block-start: auto; display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
 .menu-c .mono { color: var(--mut-k); user-select: all; direction: ltr; unicode-bidi: isolate; }
-.menu-open { overflow: hidden; }
+.menu-open, .locked { overflow: hidden; }
 
 /* ---------------------------------------------------------------- hero */
 .hero {
@@ -218,7 +218,11 @@ html[dir="rtl"] .mq-t { animation-name: slide-r; }
 .mq.paused .mq-t { animation-play-state: paused; }
 .mq-g { display: flex; align-items: center; flex: none; }
 .mq-g span { font-size: clamp(40px, 6.4vw, 110px); padding-inline: .32em; white-space: nowrap; }
-.mq-g span:nth-of-type(even) { color: transparent; -webkit-text-stroke: 1.5px var(--paper); }
+/* An outline drawn with text-stroke traces every contour, and these fonts
+   overlap their contours inside a letter, so the insides showed through.
+   The stroke is painted first and a fill in the background colour on top:
+   only the outer edge stays visible. */
+.mq-g span:nth-of-type(even) { color: var(--ink); -webkit-text-stroke: 3px var(--paper); paint-order: stroke fill; }
 .star { width: clamp(22px, 2.6vw, 42px); height: auto; fill: var(--o); flex: none; }
 @keyframes slide { to { transform: translateX(-50%); } }
 @keyframes slide-r { to { transform: translateX(50%); } }
@@ -305,7 +309,7 @@ html[lang="ar"] .sv-top { font: 600 15px var(--f-ar); letter-spacing: 0; }
 html[dir="rtl"] .steps-line::after { transform-origin: right; }
 .steps-w.in .steps-line::after { transform: scaleX(1); }
 .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px clamp(20px, 3vw, 48px); }
-.st-n { display: block; font-size: clamp(64px, 7.4vw, 140px); color: transparent; -webkit-text-stroke: 1.5px var(--ink); }
+.st-n { display: block; font-size: clamp(64px, 7.4vw, 140px); color: var(--paper); -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; }
 .st h3 { font-size: clamp(20px, 1.6vw, 26px); margin: 18px 0 8px; font-weight: 700; }
 .st p { margin: 0; color: var(--mut); max-width: 32ch; }
 
@@ -408,7 +412,7 @@ html[lang="ar"] .ft-big-line { line-height: 1.6; }
 .ft-col a:hover { color: var(--paper); }
 .ft-name { padding-inline: var(--pad); margin-block-start: clamp(64px, 9vw, 140px); color: var(--o); }
 .ft-name .fit { line-height: .8; padding-block-end: .04em; }
-html[lang="ar"] .ft-name .fit { line-height: 1.45; padding-block-end: 0; }
+html[lang="ar"] .ft-name .fit { line-height: 1.45; padding-block-end: .3em; }
 .ft-bot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px 24px; padding-block: 22px 30px; margin-block-start: 24px; border-top: 1px solid var(--line-k); color: var(--mut-k); font-size: 13px; }
 .ft-bot a { text-decoration: none; }
 
@@ -434,20 +438,39 @@ html[lang="ar"] .ft-name .fit { line-height: 1.45; padding-block-end: 0; }
 
 /* ---------------------------------------------------------------- offer */
 .offer {
-  position: fixed; inset-inline-start: var(--pad); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 55;
-  width: min(360px, calc(100vw - 32px)); background: var(--ink); color: var(--paper);
-  border-radius: 16px; padding: 22px 22px 20px; box-shadow: 0 24px 60px rgba(16, 15, 14, .28);
-  opacity: 0; transform: translateY(24px); transition: opacity .5s var(--ease-o), transform .6s var(--ease-o);
+  position: fixed; inset: 0; z-index: 75; display: grid; place-items: center;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px));
 }
 .offer[hidden] { display: none; }
-.offer.on { opacity: 1; transform: none; }
+.offer-bg { position: absolute; inset: 0; background: rgba(16, 15, 14, .72); opacity: 0; transition: opacity .45s; }
+.offer-card {
+  position: relative; width: min(520px, 100%); max-height: 100%; overflow-y: auto;
+  background: var(--ink); color: var(--paper); border-radius: 20px; padding: clamp(26px, 4vw, 44px);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, .35); outline: none;
+  opacity: 0; transform: translateY(28px) scale(.97); transition: opacity .45s var(--ease-o), transform .6s var(--ease-o);
+}
+.offer.on .offer-bg { opacity: 1; }
+.offer.on .offer-card { opacity: 1; transform: none; }
 .offer .lbl { color: var(--mut-k); }
-.offer-t { font-size: 46px; color: var(--o); margin: 4px 0 6px; }
-.offer-b { margin: 0 0 16px; color: var(--mut-k); font-size: 15px; }
-.offer-a { display: flex; gap: 8px; flex-wrap: wrap; }
-.offer .btn { min-height: 44px; padding: 10px 18px; font-size: 14px; }
-.offer .btn-t { color: var(--paper); }
-.offer-x { position: absolute; inset-block-start: 6px; inset-inline-end: 6px; width: 44px; height: 44px; background: none; border: 0; font-size: 24px; cursor: pointer; color: var(--mut-k); }
+.offer-t { font-size: clamp(48px, 7vw, 84px); color: var(--o); margin: 6px 0 10px; }
+.offer-b { margin: 0 0 22px; color: var(--paper); font-size: 17px; max-width: 34ch; }
+.offer-f { display: flex; flex-direction: column; gap: 14px; padding-block-start: 20px; border-top: 1px solid var(--line-k); }
+.offer-fh { margin: 0; color: var(--mut-k); font-size: 15px; }
+.offer-ff { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.offer .fld span { color: var(--mut-k); }
+.offer .fld input { color: var(--paper); border-bottom-color: var(--mut-k); }
+.offer .fld input:focus { border-bottom-color: var(--o); }
+.offer-f .btn { width: 100%; justify-content: space-between; }
+.offer .lead-msg.ok { color: #7FD69B; }
+.offer .lead-msg.bad { color: #FF8A73; }
+.offer-f.sent .fld, .offer-f.sent .btn { opacity: .4; pointer-events: none; }
+.offer-a { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-block-start: 8px; }
+.offer .btn-t { color: var(--paper); min-height: 46px; padding: 10px 18px; font-size: 14px; }
+.offer .btn-t:hover { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+.offer-skip { background: none; border: 0; color: var(--mut-k); font-size: 14px; cursor: pointer; min-height: 44px; padding: 0 4px; text-decoration: underline; text-underline-offset: 4px; }
+.offer-x { position: absolute; inset-block-start: 10px; inset-inline-end: 10px; width: 44px; height: 44px; border-radius: 50%; background: none; border: 0; font-size: 26px; cursor: pointer; color: var(--mut-k); }
+.offer-x:hover { color: var(--paper); }
+@media (max-width: 480px) { .offer-ff { grid-template-columns: 1fr; } }
 
 /* ---------------------------------------------------------------- home: services list */
 .svl { padding-block: clamp(100px, 12vw, 200px); }
