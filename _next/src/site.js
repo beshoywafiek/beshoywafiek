@@ -451,34 +451,31 @@
     });
   }
 
-  /* ---------------- page transition ----------------
-     An orange sheet covers the page on an internal link and lifts off the
-     next one. Never on hash links, new tabs or modified clicks. */
-  var wipe = $('.wipe');
-  if (wipe && !reduce) {
-    var arrived = false;
-    try { arrived = sessionStorage.getItem('bw_wipe') === '1'; sessionStorage.removeItem('bw_wipe'); } catch (e) {}
-    if (arrived) {
-      wipe.classList.add('cover');
-      requestAnimationFrame(function () { requestAnimationFrame(function () {
-        wipe.classList.remove('cover'); wipe.classList.add('leave');
-        setTimeout(function () { wipe.classList.remove('leave'); }, 800);
-      }); });
-    }
-    document.addEventListener('click', function (e) {
-      var a = e.target.closest('a[href]');
-      if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      if (a.target === '_blank' || a.hasAttribute('download')) return;
-      var u = new URL(a.href, location.href);
-      if (u.origin !== location.origin || !/\.html$|\/$/.test(u.pathname)) return;
-      if (u.pathname === location.pathname && u.hash) return;
-      e.preventDefault();
-      try { sessionStorage.setItem('bw_wipe', '1'); } catch (er) {}
-      wipe.classList.add('go');
-      setTimeout(function () { location.href = a.href; }, 520);
-    });
-    addEventListener('pageshow', function (e) { if (e.persisted) wipe.className = 'wipe'; });
+  /* ---------------- navigation ----------------
+     Links are plain links: the browser navigates the moment they are
+     clicked. (An earlier version held every click for a 520ms wipe and
+     navigated by script — measured at ~1.45s a click on a phone, and in a
+     sandboxed frame it could stall on the orange sheet.) The cross-page
+     fade is the browser's own view transition, in the CSS, and costs no
+     wait. To make the next page instant, it is prefetched the moment a
+     pointer or finger reaches its link. */
+  var fetched = {};
+  function prefetch(e) {
+    var a = e.target.closest && e.target.closest('a[href]');
+    if (!a || a.target === '_blank') return;
+    var u = new URL(a.href, location.href);
+    if (u.origin !== location.origin || u.pathname === location.pathname || fetched[u.pathname]) return;
+    fetched[u.pathname] = 1;
+    var l = document.createElement('link'); l.rel = 'prefetch'; l.href = u.pathname; document.head.appendChild(l);
   }
+  document.addEventListener('pointerover', prefetch, { passive: true });
+  document.addEventListener('touchstart', prefetch, { passive: true });
+  document.addEventListener('focusin', prefetch);
+
+  // "back to top" scrolls this page; it never leaves it
+  $$('.to-top').forEach(function (a) {
+    a.addEventListener('click', function (e) { e.preventDefault(); scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); });
+  });
 
   /* ---------------- start ---------------- */
   function ready() { measure(); root.classList.add('ready'); }

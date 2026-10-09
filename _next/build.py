@@ -296,7 +296,6 @@ def page(body_cls, title, desc, path, main, R='', og=None, cur=''):
             '<body class="%s">\n' % body_cls + header(R, cur) +
             '<main id="main">\n' + main + '\n</main>\n' + footer(R) + offer() +
             '<div class="cur" aria-hidden="true"><span class="cur-l">%s</span></div>\n' % bi('شوف', 'View') +
-            '<div class="wipe" aria-hidden="true"></div>\n'
             '<script src="%sjs/site.js" defer></script>\n</body>\n</html>\n' % R)
 
 
@@ -513,7 +512,7 @@ def home():
     cats_en = [v[1] for v in C.CATS.values()]
 
     main = f'''
-<section class="hero" id="top">
+<section class="hero">
   <div class="hero-trail" aria-hidden="true">{trail}</div>
   <div class="wrap hero-top">
     <p class="mono">{bi(C.SEO_JOB_AR, C.SEO_JOB_EN)}</p>
@@ -531,7 +530,7 @@ def home():
     <p class="hero-line">{bi(*[re.sub('</?em>', '', x) for x in (' '.join(C.HERO_AR), ' '.join(C.HERO_EN))])}</p>
     <p class="hero-intro">{bi(*C.HERO_INTRO)}</p>
     <div class="hero-a">
-      <a class="btn btn-o btn-xl" href="#work">{bi(*C.HERO_CTA)}{ARROW_D}</a>
+      <a class="btn btn-o btn-xl" href="work.html">{bi(*C.HERO_CTA)}{ARROW}</a>
       <a class="btn btn-t" href="{C.WA}" target="_blank" rel="noopener">{WA_ICON}{bi('واتساب', 'WhatsApp')}</a>
     </div>
   </div>
