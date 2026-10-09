@@ -14,10 +14,23 @@
   var $ = function (s, c) { return (c || document).querySelector(s); };
   var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
   var WA = (document.querySelector('a[href^="https://wa.me/"]') || { href: 'https://wa.me/201273874839' }).href.split('?')[0];
-  var store = {
-    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
-    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
-  };
+  /* Remembered settings (language, the offer). localStorage when the
+     browser allows it; inside a sandboxed frame — the preview viewer is
+     one — it throws, so fall back to window.name, which survives page to
+     page in the same tab. Without that fallback nothing was remembered
+     there and the offer reopened over every page. */
+  var store = (function () {
+    var ls = null;
+    try { ls = window.localStorage; ls.setItem('bw_t', '1'); ls.removeItem('bw_t'); } catch (e) { ls = null; }
+    function nameMap() { try { return /^bw:/.test(window.name) ? JSON.parse(window.name.slice(3)) : {}; } catch (e) { return {}; } }
+    return {
+      get: function (k) { return ls ? ls.getItem(k) : (nameMap()[k] || null); },
+      set: function (k, v) {
+        if (ls) { try { ls.setItem(k, v); } catch (e) {} return; }
+        var m = nameMap(); m[k] = v; try { window.name = 'bw:' + JSON.stringify(m); } catch (e) {}
+      }
+    };
+  })();
 
   /* ---------------- language ---------------- */
   function setLang(l) {
@@ -401,13 +414,28 @@
     };
     var openOffer = function () {
       if (document.hidden || document.body.classList.contains('menu-open')) return;
+      // counted as seen the moment it shows, so it appears once per visit
+      // even if it is never closed
+      store.set('bw_offer_seen', String(Date.now()));
       lastFocus = document.activeElement;
       offer.hidden = false; void offer.offsetWidth; offer.classList.add('on');
       document.body.classList.add('locked');
       card.focus({ preventScroll: true });
     };
     if (Date.now() - seen > wait) setTimeout(openOffer, (+offer.getAttribute('data-delay') || 5) * 1000);
-    offer.addEventListener('click', function (e) { if (e.target.closest('[data-close]')) closeOffer(false); });
+    offer.addEventListener('click', function (e) {
+      if (!e.target.closest('[data-close]')) return;
+      closeOffer(false);
+      // a click on the dimmed backdrop over the header was meant for the
+      // header: close the offer AND follow that link (or open the menu),
+      // instead of swallowing the navigation
+      if (e.target.classList.contains('offer-bg') && document.elementsFromPoint) {
+        var under = document.elementsFromPoint(e.clientX, e.clientY).filter(function (el) {
+          return el.closest && el.closest('.hd') && el.closest('a[href], button');
+        })[0];
+        if (under) under.closest('a[href], button').click();
+      }
+    });
     $('#offerGo').addEventListener('click', function () { closeOffer(true); });
     $('#offerF').addEventListener('lead', function (e) { if (e.detail) setTimeout(function () { closeOffer(true); }, 2200); });
     document.addEventListener('keydown', function (e) {

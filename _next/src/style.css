@@ -165,6 +165,8 @@ html[lang="ar"] :is(.mono, .kick, .lbl) { font-family: var(--f-ar); letter-spaci
 .menu-c { margin-block-start: auto; display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
 .menu-c .mono { color: var(--mut-k); user-select: all; direction: ltr; unicode-bidi: isolate; }
 .menu-open, .locked { overflow: hidden; }
+/* keep the scrollbar's space while the page is locked, so nothing jumps sideways */
+html:has(> body.menu-open), html:has(> body.locked) { scrollbar-gutter: stable; }
 
 /* ---------------------------------------------------------------- hero */
 .hero {
