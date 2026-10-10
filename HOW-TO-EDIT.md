@@ -146,73 +146,98 @@ work/                   صفحة لكل مشروع (مولّدة — ماتعد�
 
 # تسجيل بيانات العملاء في جوجل شيت
 
-الفورم اللي في آخر الصفحة شغال دلوقتي على الواتساب. لو عايز البيانات
-تتسجل عندك في شيت كمان، ده بياخد ٥ دقايق — ومش محتاج سيرفر ولا فلوس.
+**متوصّل.** الفورم اللي في صفحة التواصل، وفورم العرض (الخصم)، وفورم الموقع
+الحالي — التلاتة بيبعتوا لنفس الشيت. أول تاب، والصف الأول فيه بالظبط:
 
-## الخطوات
+`Name | Email | Phone | Message | Date`
 
-**١.** افتح [sheets.new](https://sheets.new) واعمل شيت جديد. سمّيه مثلاً
-"عملاء الموقع".
+- **Message** = إجابات الأسئلة التلاتة (أو «عرض أول تعامل — خصم ٣٠٪»).
+- **Date** = وقت ما جوجل استلم الطلب (بتوقيت الشيت — خليه Cairo).
+- لو الإرسال فشل لأي سبب، بيظهر للعميل زرار واتساب فيه نفس البيانات، فمفيش عميل بيضيع.
 
-**٢.** في الشيت: **Extensions → Apps Script**
+اللينك محطوط في `_source/content.py`:
 
-**٣.** امسح أي كود موجود، والصق ده:
+```python
+FORM_ENDPOINT = 'https://script.google.com/macros/s/…/exec'
+```
+
+## الكود اللي في الشيت (Extensions → Apps Script)
+
+لو احتجت تعمله من الأول: الصق ده، شغّل `testSetup` مرة وامسح صف التجربة،
+وبعدين **Deploy → New deployment → Web app** (Execute as: Me — Who has
+access: Anyone)، وحط لينك `/exec` الجديد في `FORM_ENDPOINT` و`npm run build`.
 
 ```javascript
+/**
+ * Website leads → this Google Sheet.
+ * Receives the contact form and the offer popup from both the new site and
+ * the live site, and adds one row per lead to the FIRST tab, whose row 1 is:
+ *   Name | Email | Phone | Message | Date
+ */
+
+var MAX_LEN = 500;   // longest value accepted in any field
+
 function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
+    var data = {};
+    try { data = JSON.parse((e && e.postData && e.postData.contents) || '{}'); } catch (err) { data = {}; }
+
+    // Spam trap: people never see this field, so anything in it is a bot.
+    if (data.website) return reply('ok');
+
+    var name = clean(data.name), phone = clean(data.phone).replace(/^'/, '');
+    if (!name || !phone) return reply('ok');           // nothing useful to save
+
+    var values = {
+      'name':    name,
+      'email':   clean(data.email),
+      'phone':   "'" + phone,                           // keep a leading 0 or + as typed
+      'message': clean(data.needs),                     // the three answers, or the offer
+      'date':    new Date()                             // when Google received it
+    };
+
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
-    var data  = JSON.parse(e.postData.contents);
-
-    // أول مرة بس: بيكتب عناوين الأعمدة
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow(['التاريخ','الاسم','الواتساب','الإيميل',
-                       'محتاج إيه','اللغة','الصفحة','جه منين']);
-      sheet.setFrozenRows(1);
-    }
-
-    sheet.appendRow([
-      new Date(),
-      data.name     || '',
-      data.phone    || '',
-      data.email    || '',
-      data.needs    || '',
-      data.lang     || '',
-      data.page     || '',
-      data.referrer || ''
-    ]);
-
-    // يبعتلك إيميل كل ما حد يسجل — امسح السطرين دول لو مش عايز
-    MailApp.sendEmail(Session.getEffectiveUser().getEmail(),
-      'عميل جديد من الموقع: ' + (data.name || ''),
-      'الاسم: ' + data.name + '\nواتساب: ' + data.phone +
-      '\nإيميل: ' + data.email + '\nمحتاج: ' + data.needs);
-
-    return ContentService.createTextOutput('ok');
+    var headers = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)).getValues()[0];
+    var row = headers.map(function (h) {
+      var key = String(h).trim().toLowerCase();
+      return values.hasOwnProperty(key) ? values[key] : '';
+    });
+    sheet.appendRow(row);
+    return reply('ok');
   } finally {
     lock.releaseLock();
   }
 }
+
+// Opening the /exec link in a browser shows this, so you can check the deployment.
+function doGet() {
+  return reply('OK — the website leads endpoint is running.');
+}
+
+// Run this once from the editor: it asks for permission and adds a test row.
+function testSetup() {
+  doPost({ postData: { contents: JSON.stringify({
+    name: 'Test lead', email: 'test@example.com', phone: '01000000000',
+    needs: 'هوية بصرية متكاملة / لسه من الصفر / خلال شهر'
+  }) } });
+}
+
+// Plain text, trimmed, length-limited, and never treated as a formula.
+function clean(v) {
+  var s = String(v == null ? '' : v).replace(/[\r\n\t]+/g, ' ').trim().slice(0, MAX_LEN);
+  if (/^[=+\-@]/.test(s)) s = "'" + s;
+  return s;
+}
+
+function reply(text) {
+  return ContentService.createTextOutput(text).setMimeType(ContentService.MimeType.TEXT);
+}
 ```
 
-**٤.** **Deploy → New deployment** → اختار **Web app**
-   - **Execute as:** Me
-   - **Who has access:** **Anyone**  ← مهم جداً، من غيرها مش هتشتغل
-   - دوس Deploy، ووافق على الصلاحيات
-
-**٥.** هيديك لينك شكله كده:
-`https://script.google.com/macros/s/AKfy....../exec`
-انسخه.
-
-**٦.** افتح `_source/content.py` وحطه هنا:
-
-```python
-FORM_ENDPOINT = 'https://script.google.com/macros/s/AKfy....../exec'
-```
-
-**٧.** `npm run build` وارفع تاني. خلاص.
+**لو عدّلت الكود بعد كده:** Deploy → Manage deployments → القلم → Version: New
+version → Deploy. كده اللينك بيفضل زي ما هو. (New deployment بيعمل لينك جديد.)
 
 ## بعد كده
 

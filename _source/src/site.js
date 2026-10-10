@@ -800,6 +800,11 @@
 
   form.addEventListener('submit', function (ev) {
     ev.preventDefault();
+    // a fresh attempt starts clean: no leftover error, no leftover button
+    msg.className = 'lead-msg';
+    msg.textContent = '';
+    var oldWa = form.querySelector('.lead-wa');
+    if (oldWa) oldWa.parentNode.removeChild(oldWa);
     var data = {};
     Array.prototype.forEach.call(form.querySelectorAll('input'), function (i) {
       data[i.name] = i.value.trim();
@@ -856,7 +861,21 @@
       btn.removeAttribute('aria-busy');
       msg.className = 'lead-msg ' + (ok ? 'ok' : 'bad');
       msg.textContent = ok ? t('ok') : t('err');
-      if (ok) form.classList.add('sent'); else toWhatsApp();
+      if (ok) form.classList.add('sent'); else waButton();
+    }
+
+    // When the send fails the browser would block a WhatsApp window opened
+    // from here (it is no longer a direct click), so the same message is
+    // offered as a button — a copy of the page's WhatsApp button.
+    function waButton() {
+      var line = data.name + ' — ' + data.phone + (data.needs ? ' — ' + data.needs : '');
+      var base = waHref ? waHref.href.split('?text=')[0] : 'https://wa.me/201273874839';
+      var a = waHref ? waHref.cloneNode(true) : document.createElement('a');
+      a.removeAttribute('id');
+      a.className = (waHref ? waHref.className + ' ' : 'btn ') + 'lead-wa';
+      a.href = base + '?text=' + encodeURIComponent(line);
+      a.target = '_blank'; a.rel = 'noopener';
+      msg.parentNode.insertBefore(a, msg.nextSibling);
     }
 
     var guard = setTimeout(function () { finish(false); }, 9000);

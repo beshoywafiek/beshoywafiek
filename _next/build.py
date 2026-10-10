@@ -283,6 +283,7 @@ def offer():
     <p class="offer-t" id="offerT">{bi(*C.OFFER_TITLE)}</p>
     <p class="offer-b">{bi(*C.OFFER_BODY)}</p>
     <form class="offer-f lead-f" id="offerF" novalidate data-endpoint="{e(C.FORM_ENDPOINT)}"
+      data-wabtn-ar="{e(C.CONTACT_BTN[0])}" data-wabtn-en="{e(C.CONTACT_BTN[1])}"
       data-needs="{e(C.OFFER_KICK[0] + ' — ' + C.OFFER_TITLE[0])}" data-wa-ar="{e(C.OFFER_MSG[0])}" data-wa-en="{e(C.OFFER_MSG[1])}"
       data-busy-ar="{e(C.FORM_SENDING[0])}" data-busy-en="{e(C.FORM_SENDING[1])}"
       data-ok-ar="{e(C.OFFER_OK[0])}" data-ok-en="{e(C.OFFER_OK[1])}"
@@ -359,6 +360,7 @@ def lead_form():
            {'name': 'name', 'phone': 'tel', 'email': 'email'}.get(k, 'on'))
         for k, la, le, t, req in C.FORM_FIELDS)
     return f'''<form class="lead lead-f" id="lead" data-endpoint="{e(C.FORM_ENDPOINT)}" novalidate
+  data-wabtn-ar="{e(C.CONTACT_BTN[0])}" data-wabtn-en="{e(C.CONTACT_BTN[1])}"
   data-busy-ar="{e(C.FORM_SENDING[0])}" data-busy-en="{e(C.FORM_SENDING[1])}"
   data-ok-ar="{e(C.FORM_OK[0])}" data-ok-en="{e(C.FORM_OK[1])}"
   data-err-ar="{e(C.FORM_ERR[0])}" data-err-en="{e(C.FORM_ERR[1])}">

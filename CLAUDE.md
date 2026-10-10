@@ -276,9 +276,13 @@ Measured on this page, not in general:
 
 # Known open items (need the owner, not code)
 
-1. **`FORM_ENDPOINT` in `content.py` is empty** — the lead form falls back to
-   WhatsApp and nothing is recorded. Setup steps are in `HOW-TO-EDIT.md`.
-   It must be deployed under *his* Google account.
+1. **The lead forms are connected (Oct 2026).** `FORM_ENDPOINT` in `content.py`
+   is his Google Apps Script web app; the live contact form, the new site's
+   contact form and its offer popup all post to it (columns Name | Email |
+   Phone | Message | Date — the script is in `HOW-TO-EDIT.md`). **Tests must
+   never post to it:** `feat.js`, `hp.js` and `_next/tests/forms.js` intercept
+   `script.google.com`; any new test that submits a form must do the same, or
+   every `npm test` adds rows to his real sheet.
 2. **No custom domain yet.** `SITE` in `content.py` is the one line to change.
 3. **71 of 73 homepage images are hotlinked from Behance's CDN.** If Behance
    ever blocks hotlinking, the portfolio goes blank. The fix is downloading the

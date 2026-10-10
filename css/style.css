@@ -1097,6 +1097,7 @@ html[dir="rtl"] .hero-veil{background:
 .lead-msg{margin-top:14px;font-size:14.5px;line-height:1.7;min-height:1px;}
 .lead-msg.ok{color:#2ecc71;}
 .lead-msg.bad{color:#ff7a5c;}
+.lead-wa{margin-top:12px;}   /* only appears when a send fails */
 .lead.sent .lead-grid,.lead.sent .lead-act{display:none;}
 
 /* ===================== service pages ===================== */

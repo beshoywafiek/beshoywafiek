@@ -56,17 +56,34 @@ let fail=0; const ok=(c,m)=>{if(!c)fail++;console.log((c?'  ok   ':'  FAIL ')+m)
   let m=await p.evaluate(()=>document.getElementById('leadMsg').textContent);
   ok(m.length>3,'empty form is refused with a message: "'+m+'"');
   await p.fill('input[name=name]','تجربة'); await p.fill('input[name=phone]','01000000000');
-  // intercept window.open rather than chase a popup tab — deterministic
+  // The form posts to his Google Sheet. The gate must never add rows to it,
+  // so the endpoint is intercepted here and answered locally.
+  const posts=[];
+  await p.route('**://script.google.com/**', r=>{ posts.push(r.request().postData()); r.fulfill({status:200,contentType:'text/plain',body:'ok'}); });
   const opened=[];
   await p.exposeFunction('__rec',u=>opened.push(u));
   await p.evaluate(()=>{window.open=function(u){window.__rec&&window.__rec(u);return null;};});
   await p.click('.ask .ask-q:nth-child(1) .chip:nth-child(1)');
-  await p.click('#leadBtn'); await p.waitForTimeout(700);
-  ok(opened.length===1,'with no endpoint set it falls back to WhatsApp');
-  if(opened[0]){
-    const u=decodeURIComponent(opened[0]);
-    ok(/wa\.me/.test(u)&&/01000000000/.test(u),'the details ride along: "'+u.split('text=')[1]+'"');
-  }
+  await p.click('#leadBtn'); await p.waitForTimeout(900);
+  const sent = posts[0] ? JSON.parse(posts[0]) : {};
+  ok(posts.length===1 && sent.name==='تجربة' && sent.phone==='01000000000' && !!sent.needs,
+     'it sends the lead to the sheet endpoint (name, phone, answers: "'+(sent.needs||'')+'")');
+  const after=await p.evaluate(()=>({cls:document.getElementById('leadMsg').className, txt:document.getElementById('leadMsg').textContent}));
+  ok(/ok/.test(after.cls) && !/bad/.test(after.cls), 'the earlier error is gone and it says the lead arrived: "'+after.txt+'"');
+  ok(opened.length===0, 'no WhatsApp window when the send works');
+  // and when the send fails: no popup (a browser would block it), a WhatsApp button instead
+  await p.unroute('**://script.google.com/**');
+  await p.route('**://script.google.com/**', r=>r.abort('failed'));
+  await p.evaluate(()=>{document.getElementById('lead').classList.remove('sent');});
+  await p.click('#leadBtn'); await p.waitForTimeout(900);
+  const fail=await p.evaluate(()=>{const a=document.querySelector('#lead .lead-wa');
+    return {cls:document.getElementById('leadMsg').className, href:a?decodeURIComponent(a.href):'', shown:!!a&&a.getClientRects().length>0,
+            buttons:document.querySelectorAll('#lead .lead-wa').length};});
+  ok(/bad/.test(fail.cls) && fail.shown && /wa\.me/.test(fail.href) && /01000000000/.test(fail.href),
+     'a failed send shows a WhatsApp button carrying the details: "'+fail.href.split('text=')[1]+'"');
+  ok(opened.length===0, 'and opens no popup on its own');
+  await p.click('#leadBtn'); await p.waitForTimeout(900);
+  ok(await p.evaluate(()=>document.querySelectorAll('#lead .lead-wa').length)===1, 'a second failed try does not stack buttons');
   await ctx.close();
  }
  await b.close();

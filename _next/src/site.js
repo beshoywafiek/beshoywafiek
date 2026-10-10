@@ -350,6 +350,9 @@
     var t = function (k) { return form.getAttribute('data-' + k + '-' + lang()) || ''; };
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
+      // a fresh attempt starts clean: no leftover error, no leftover button
+      msg.className = 'lead-msg'; msg.textContent = '';
+      var oldWa = $('.lead-wa', form); if (oldWa) oldWa.parentNode.removeChild(oldWa);
       var data = {};
       $$('input', form).forEach(function (i) { data[i.name] = i.value.trim(); });
       // the honeypot: a person never sees it, so anything there is a bot;
@@ -366,15 +369,28 @@
         $$('.ask .chip.on').map(function (c) { return c.getAttribute('data-ar'); }).join(' / ');
       data.lang = lang(); data.page = location.pathname; data.referrer = document.referrer || 'direct';
       data.at = new Date().toISOString();
-      function toWhatsApp() {
+      function waLink() {
         var lead = form.getAttribute('data-wa-' + lang());
         var line = (lead ? lead + '\n' : '') + data.name + ' — ' + data.phone + (!lead && data.needs ? ' — ' + data.needs : '');
-        window.open(WA + '?text=' + encodeURIComponent(line), '_blank', 'noopener');
+        return WA + '?text=' + encodeURIComponent(line);
+      }
+      function toWhatsApp() { window.open(waLink(), '_blank', 'noopener'); }
+      // When the send fails the browser would block a WhatsApp window opened
+      // from here (it is no longer a direct click), so it is offered as a
+      // button under the message instead.
+      function waButton() {
+        var a = document.createElement('a');
+        a.className = 'btn btn-o lead-wa'; a.href = waLink(); a.target = '_blank'; a.rel = 'noopener';
+        a.innerHTML = '<span class="ar"></span><span class="en"></span>';
+        a.firstChild.textContent = form.getAttribute('data-wabtn-ar') || 'واتساب';
+        a.lastChild.textContent = form.getAttribute('data-wabtn-en') || 'WhatsApp';
+        var icon = $('.hd-cta svg'); if (icon) a.insertBefore(icon.cloneNode(true), a.firstChild);
+        msg.parentNode.insertBefore(a, msg.nextSibling);
       }
       function finish(ok) {
         btn.disabled = false;
         msg.className = 'lead-msg ' + (ok ? 'ok' : 'bad'); msg.textContent = ok ? t('ok') : t('err');
-        if (ok) form.classList.add('sent'); else toWhatsApp();
+        if (ok) form.classList.add('sent'); else waButton();
         form.dispatchEvent(new CustomEvent('lead', { detail: ok }));
       }
       if (!endpoint) { toWhatsApp(); form.dispatchEvent(new CustomEvent('lead', { detail: true })); return; }

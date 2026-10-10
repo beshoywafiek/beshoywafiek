@@ -7,6 +7,8 @@ const { chromium } = require('playwright');
  for(const lang of ['en','ar']){
   const ctx=await b.newContext({viewport:{width:1400,height:900},locale:lang==='ar'?'ar-EG':'en-US'});
   const p=await ctx.newPage();
+  // the form posts to his real Google Sheet: count what reaches it, answer locally
+  const sheet=[]; await p.route('**://script.google.com/**',r=>{sheet.push(1);r.fulfill({status:200,body:'ok'});});
   await p.route('**://mir-s3-cdn-cf.behance.net/**',r=>r.fulfill({status:200,contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==','base64')}));
   await p.addInitScript(()=>{try{localStorage.setItem('bw_offer_seen',String(Date.now()))}catch(e){}});
   await p.goto('http://localhost:8099/index.html',{waitUntil:'domcontentloaded'});
@@ -37,6 +39,7 @@ const { chromium } = require('playwright');
   const after=await p.evaluate(()=>({cls:document.getElementById('leadMsg').className,
                                      txt:document.getElementById('leadMsg').textContent.slice(0,40)}));
   note(!/bad/.test(after.cls), `${lang}: a filled honeypot is dropped quietly (${after.cls})`);
+  note(sheet.length===0, `${lang}: and nothing is sent to the sheet (${sheet.length} requests)`);
   await ctx.close();
  }
  await b.close();
