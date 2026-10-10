@@ -21,8 +21,14 @@ node _next/tests/shot.js /index.html en 1440 900 0,1,2   # screenshots
 node _next/tests/wide.js /index.html ar                  # sideways scroll
 node _next/tests/interact.js                             # the interactive parts
 TIGHT=6 node _next/tests/overlap.js 1440 ar              # no text touches other text
+node _next/tests/notfound.js                             # the 404 page works at any deployment path
 ```
 
 `_next/` starts with an underscore, so GitHub Pages does not publish it.
 When the owner approves the design, the plan is to make this the generator
 for the root and port the 15 gates to it.
+
+The 404 page carries its own stylesheet, script and logo, and its links find
+the site's root at runtime, because GitHub Pages serves it for any missing
+address at any depth. It works at `/beshoy-wafiek/`, `/beshoywafiek/` or a
+domain root without a rebuild.

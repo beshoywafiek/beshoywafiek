@@ -798,6 +798,29 @@ def service(s):
     return page('pg-svc', title, '%s %s' % (ard, end), 'services/%s.html' % sp['slug'], main, R='../', cur='services')
 
 
+# GitHub Pages answers ANY missing address with 404.html, at any depth
+# (/beshoy-wafiek/work/old/link), so the page cannot know where the site's
+# root is from its own location — relative paths break, and a fixed
+# '/beshoywafiek/' breaks on any other repository or a custom domain.
+# So the 404 page carries its stylesheet, script and logo inside itself,
+# and its links find the root at runtime: the root is wherever index.html
+# actually exists, '/<first segment>/' (a project site) or '/' (a user
+# site or a custom domain).
+ROOT_FINDER = """<script>(function(){var seg=location.pathname.split('/').filter(Boolean)[0],
+root=(/\\.github\\.io$/i.test(location.hostname)&&seg)?'/'+seg+'/':'/';
+function apply(r){root=r;document.querySelectorAll('[data-rel]').forEach(function(e){
+e.setAttribute(e.tagName==='IMG'?'src':'href',r+e.getAttribute('data-rel'))})}
+document.addEventListener('DOMContentLoaded',function(){apply(root);if(!seg)return;
+fetch('/'+seg+'/index.html',{method:'HEAD',cache:'no-store'}).then(function(x){
+var r=x.ok?'/'+seg+'/':'/';if(r!==root)apply(r)}).catch(function(){})})})()</script>"""
+
+
+def data_uri(path, mime):
+    import base64
+    with open(path, 'rb') as f:
+        return 'data:%s;base64,%s' % (mime, base64.b64encode(f.read()).decode())
+
+
 def notfound():
     imgs = ''.join(picture(cover(BY[s]), size='sm') for s in WINDOW[:5])
     main = f'''
@@ -806,12 +829,25 @@ def notfound():
     <h1 class="nf-h"><span class="fit" data-fit>404</span></h1>
     <p class="nf-t">{bi(*C.NF_HEAD)}</p>
     <p class="nf-b">{bi(*C.NF_BODY)}</p>
-    <div class="hero-a"><a class="btn btn-o btn-xl" href="/beshoywafiek/work.html">{bi(*C.NF_WORK)}{ARROW}</a>
-    <a class="btn btn-t" href="/beshoywafiek/index.html">{bi(*C.NF_HOME)}</a></div>
+    <div class="hero-a"><a class="btn btn-o btn-xl" href="work.html">{bi(*C.NF_WORK)}{ARROW}</a>
+    <a class="btn btn-t" href="index.html">{bi(*C.NF_HOME)}</a></div>
   </div>
   <div class="nf-imgs" aria-hidden="true">{imgs}</div>
 </section>'''
-    return page('pg-nf', '404 — ' + C.NAME[1], C.NF_BODY[1], '404.html', main, R='/beshoywafiek/')
+    h = page('pg-nf', '404 — ' + C.NAME[1], C.NF_BODY[1], '404.html', main)
+    img_dir = os.path.join(ROOT, 'images')
+    css = open(os.path.join(SRC, 'style.css'), encoding='utf-8').read()
+    js = open(os.path.join(SRC, 'site.js'), encoding='utf-8').read()
+    h = h.replace('<link rel="stylesheet" href="css/style.css">', '<style>\n' + css + '\n</style>')
+    h = h.replace('<script src="js/site.js" defer></script>', '<script>\n' + js + '\n</script>')
+    h = h.replace('href="images/favicon.png"', 'href="%s"' % data_uri(os.path.join(img_dir, 'favicon.png'), 'image/png'))
+    h = h.replace('href="images/touch-icon.png"', 'href="%s"' % data_uri(os.path.join(img_dir, 'touch-icon.png'), 'image/png'))
+    h = h.replace('src="images/logo.png"', 'src="%s"' % data_uri(os.path.join(img_dir, 'logo.png'), 'image/png'))
+    # every remaining link inside the site waits for the root to be known
+    h = re.sub(r'href="((?!https?:|mailto:|tel:|#|data:|/)[^"]+)"', r'href="/\1" data-rel="\1"', h)
+    h = h.replace('</head>', ROOT_FINDER + '\n</head>', 1)
+    assert 'css/style.css' not in h and 'js/site.js' not in h and 'images/' not in h.replace(SITE + 'images/', '')
+    return h
 
 
 # ---------------------------------------------------------------- write
