@@ -250,7 +250,7 @@ OFFER_DAYS_ACTED = 60
 # ده لينك الـ Google Apps Script اللي بيحفظ البيانات في جوجل شيت.
 # سيبه فاضي ('') والفورم هيشتغل على الواتساب عادي.
 # خطوات تعمله في آخر HOW-TO-EDIT.md
-FORM_ENDPOINT = ''
+FORM_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwmGomTeGuQk9beoap_xhOiXf2su2xH_JC_cS_I-yfWBuomAx3IVPXU_SlZpWCif1JhnA/exec'
 
 FORM_TITLE  = ('سيب بياناتك وأنا أكلمك', 'Leave your details and I will reach out')
 FORM_NOTE   = ('أو كلمني على واتساب على طول.', 'Or message me on WhatsApp right away.')
