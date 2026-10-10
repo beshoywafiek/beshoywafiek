@@ -20,7 +20,11 @@ npm test                         # all 15 gates — MUST be green before shippin
 ```
 
 Those are `python3 _source/build.py`, `python3 -m http.server 8099` and
-`node _source/tests/check.js`. The gates must be run from `_source/tests/`.
+`node _source/tests/check.js`. `npm test` works from any directory — `check.js`
+runs each gate from its own folder. Every gate gets Chromium from
+`_source/tests/browser.js`: `CHROME_PATH` if set, else the Claude sandbox's
+build, else Playwright's own (on your own computer, install it once with
+`npx playwright install chromium`).
 
 ## Layout
 
@@ -39,9 +43,13 @@ _source/build.py      the generator (~1100 lines)
 _source/content.py    ALL site copy and settings — the file the owner edits
 _source/meta.py       project names, order, categories, and the per-project STORY
 _source/icons.py      the icon set, normalised to one grid
+_source/icons-drawn.py the previous hand-drawn set — history, nothing imports it
 _source/src/style.css authored stylesheet  → copied to css/
 _source/src/site.js   authored JS          → copied to js/
-_source/tests/*.js    the gates
+_source/tests/*.js    the 15 gates (the list is in check.js), plus tools that
+                      are NOT gates: fps.js, iso.js (performance), nojs.js
+                      (the page with JavaScript off), norm.js (icon normaliser),
+                      mobcmp.js (the phone layout against a reference copy)
 _config.yml           keeps _source/ and the docs off the live site
 ```
 
@@ -58,6 +66,32 @@ hour on this project: the root files look authored, and they are not.
 
 `build.py` works out where to write by looking for `js/` beside itself or in
 its parent, so it is safe to run from this layout or from a flat dev folder.
+
+## Design skills
+
+`.claude/skills/` holds design skills the owner chose (impeccable, ui-ux-pro-max,
+taste-skill and its presets, Emil Kowalski's motion skills); sources, licences
+and what was left out are in `.claude/skills/README.md`. Use them for taste,
+direction and critique. **Where a skill's defaults clash with this file, this
+file wins** — every rule below is a measurement on this page. In particular:
+no framework, bundler or Tailwind (the site is static HTML from `build.py`);
+no blur, backdrop-filter, blend modes or masks on full-viewport layers; never
+split Arabic text into letters; both languages and RTL for everything; and no
+invented testimonials, metrics or client claims, however a skill frames them.
+Skills that write `PRODUCT.md`, `DESIGN.md` or `design-system/` at the root are
+fine — `_config.yml` keeps those off the live site.
+
+## `_next/` — the new site, in progress (owner's choice, Oct 2026)
+
+The owner asked for a new project with a completely different layout instead
+of more changes to this one. It lives in `_next/` (underscore: not published,
+and excluded in `_config.yml`; `links.js` skips it). It reuses `content.py`,
+`meta.py` and `js/projects.json` so copy stays in one place, and has its own
+`build.py`, `src/` and review tools — see `_next/README.md`. Nothing in it
+touches the live site. Until he approves it, the rules above still govern the
+root; the same performance, RTL and content rules apply inside `_next/`.
+Its project images are self-hosted in `_next/media/` (see the README there);
+open item 3 below applies to the live site only.
 
 ---
 
@@ -154,6 +188,62 @@ Measured on this page, not in general:
   not sort, `random`, or a timestamp finer than the date. `node det.js` builds
   twice and compares every generated file.
 
+## The gates must measure what the visitor sees
+
+- **A text range's box is the font's full height, not the glyphs'.** Cairo's
+  is 1.87em; the headline is set at .94, so its boxes reach far past its
+  letters. `clip.js` and `audit.js` compared those boxes and failed on empty
+  font padding — but only where Google Fonts actually loaded. A sandbox that
+  could not reach the fonts fell back to a shorter font and stayed green. Both
+  gates now trim each box to the real ink (canvas `measureText`). Never "fix"
+  a gate by blocking the web fonts: it would then test a font nobody sees.
+- **When you change a gate, break the page on purpose and watch it fail.**
+  The ink fix was checked that way: removing the headline mask's padding
+  still fails `clip.js` (the tail of the p in "speaks"), and pushing the lead
+  into the title still fails `audit.js`. A gate that cannot fail checks nothing.
+- **`fps.js` numbers from the Claude sandbox are noise.** It has no GPU; the
+  same code measured 40 to 53fps on the desktop run across three tries. Judge
+  the performance budget on a real machine.
+
+## Icons: judge them rendered, at 34px
+
+- **The icon row looked mixed because of line weight, not solid vs outline.**
+  The docs blamed the two outline icons for being outlines; rendering the set
+  showed `IDENTITY` and `D_PALETTE` at a 2.13 line (they filled in at 34px) and
+  three filled icons at about 0.85. `norm.js` had ignored a transform nested
+  inside the exported SVG. Fixed in `norm.js`, and all seven now sit at 1.6 —
+  the numbers and why are at the top of `icons.py`.
+
+## Grids
+
+- **The 1px-gap grids (`.inc`, `.steps`, `.dv`, `.me-facts`, `.cs-meta`,
+  `.cs-st-g`, `.pf`) draw their hairlines on the cards (a 1px solid shadow),
+  not as the grid's background.** As a background, every row the cards did not
+  fill — 6 deliverables in 4 columns on a service page — showed as a solid
+  grey slab. New grids of this kind follow the same rule.
+
+## The phone is frozen; the desktop is the bold one
+
+- **The owner wants the phone experience kept exactly as the live site has
+  it.** Desktop work goes inside `@media (min-width:861px)` and desktop-gated
+  JS; outside that query only rules that keep new markup hidden or neutral on
+  a phone. Check with `node mobcmp.js` (a tool, not a gate): serve a
+  `git worktree` of `main` on 8098 and the working copy on 8099; it compares
+  four pages full-length at 390px in both languages. The accepted differences
+  today are the icon line weight and sub-pixel word spacing in the statement
+  band (its words are split into spans for the desktop reveal).
+- **Desktop direction (owner's choice, Oct 2026): bold, with motion — the
+  Lando Norris register in this site's colours.** So far: a pen stroke draws
+  itself under the headline's accent word (`.swoosh`, mirrored in Arabic); the
+  statement band becomes a light manifesto page with full-width type and the
+  `<em>` words of `BAND_LINE` in orange, set in Aref Ruqaa (Arabic) or
+  Instrument Serif italic (English), lighting up word by word; the work list
+  becomes a scattered collage (`collage()` in `build.py`, positions in `CLG`)
+  whose pieces drift at their own speeds. Those two faces are only referenced
+  inside the desktop query, so a phone never downloads them.
+- `test.js` counts only rendered cards as collapsed: the desktop hides the row
+  list on purpose and checks the collage pieces instead.
+
 ## Content rules — do not break these
 
 - **Never invent a client testimonial.** `content.py → PROOF` is empty on
@@ -186,17 +276,26 @@ Measured on this page, not in general:
 
 # Known open items (need the owner, not code)
 
-1. **`FORM_ENDPOINT` in `content.py` is empty** — the lead form falls back to
-   WhatsApp and nothing is recorded. Setup steps are in `HOW-TO-EDIT.md`.
-   It must be deployed under *his* Google account.
+1. **The lead forms are connected (Oct 2026).** `FORM_ENDPOINT` in `content.py`
+   is his Google Apps Script web app; the live contact form, the new site's
+   contact form and its offer popup all post to it (columns Name | Email |
+   Phone | Message | Date — the script is in `HOW-TO-EDIT.md`). **Tests must
+   never post to it:** `feat.js`, `hp.js` and `_next/tests/forms.js` intercept
+   `script.google.com`; any new test that submits a form must do the same, or
+   every `npm test` adds rows to his real sheet.
 2. **No custom domain yet.** `SITE` in `content.py` is the one line to change.
 3. **71 of 73 homepage images are hotlinked from Behance's CDN.** If Behance
    ever blocks hotlinking, the portfolio goes blank. The fix is downloading the
    images into `images/`; he has to do it, the CDN is not reachable from a
    sandbox.
-4. Two of the seven icons are outline while five are solid fills
-   (`IDENTITY`, `D_PALETTE` in `icons.py`). Solid replacements would make the
-   set coherent.
+4. **The hero headline is spaced wider than its CSS says.** `.mega .ln` pads
+   each line and hands the space back with negative margins, but the margins of
+   neighbouring lines collapse into one, so only part of it comes back. Measured
+   line pitch: 1.28em in English (CSS says .94) and 1.58em in Arabic (CSS says
+   1.12) — 52px and 72px extra per line on a desktop. The comment in
+   `style.css` claims "nothing moves"; it does. Fixing it (e.g. making `.mega`
+   a flex column, where margins do not collapse) visibly tightens the
+   headline, so it is his design call, not a silent fix.
 
 ---
 

@@ -10,7 +10,7 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
 const VIEWS=[[1900,950],[1512,900],[820,1180],[390,844]];
 const PAGES=['/index.html','/work.html','/work/mountain-view-club.html','/work/yalla-masyaf.html'];
 (async()=>{
-  const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome',args:['--no-sandbox']});
+  const b=await chromium.launch(require('./browser'));
   const found=[]; let examined=0;
   for(const lang of ['en','ar']){
     for(const [w,h] of VIEWS){
@@ -24,7 +24,24 @@ const PAGES=['/index.html','/work.html','/work/mountain-view-club.html','/work/y
         // registers as overflow, which is the animation, not a clipped glyph
         await p.evaluate(()=>document.querySelectorAll('.mega,.rv,.up').forEach(e=>e.classList.add('in')));
         await p.waitForTimeout(1300);
-        const bad=await p.evaluate(()=>{
+        const bad=await p.evaluate(async()=>{
+          await document.fonts.ready;
+          /* A text range's box is the FONT's full height, not the glyphs'.
+             Cairo's is 1.87em, so on a line set at .94 the box pokes out of
+             the reveal mask while every letter has room to spare — this gate
+             failed on empty font padding once the real web font loaded.
+             Canvas reports both heights for the same font, so the difference
+             trims the box down to the ink. */
+          const cx=document.createElement('canvas').getContext('2d');
+          const inkOf=(el,box)=>{
+            const cs=getComputedStyle(el);
+            let t=el.textContent.trim();
+            if(cs.textTransform==='uppercase') t=t.toUpperCase();
+            cx.font=`${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+            const m=cx.measureText(t);
+            return {top:box.top+(m.fontBoundingBoxAscent-m.actualBoundingBoxAscent),
+                    bottom:box.bottom-(m.fontBoundingBoxDescent-m.actualBoundingBoxDescent)};
+          };
           const out=[];
           const sel='h1,h2,h3,p,span,a,b,dd,dt,button,li';
           for(const el of document.querySelectorAll(sel)){
@@ -40,7 +57,7 @@ const PAGES=['/index.html','/work.html','/work/mountain-view-club.html','/work/y
             let cut=null;
             if(el.children.length===0){
               const range=document.createRange(); range.selectNodeContents(el);
-              const ink=range.getBoundingClientRect(); range.detach&&range.detach();
+              const ink=inkOf(el,range.getBoundingClientRect()); range.detach&&range.detach();
               let a=el.parentElement;
               while(a&&a!==document.body){
                 const acs=getComputedStyle(a);

@@ -4,9 +4,14 @@
 #  it is listed here so the intent is explicit and survives a .nojekyll.)
 exclude:
   - _source
+  - _next
   - node_modules
   - package.json
   - package-lock.json
   - CLAUDE.md
   - HOW-TO-EDIT.md
   - README.md
+  # design skills in .claude/skills/ write these at the repo root
+  - PRODUCT.md
+  - DESIGN.md
+  - design-system

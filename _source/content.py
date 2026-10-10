@@ -65,9 +65,10 @@ ALL_NOTE = ('كل مشروع ليه صفحة لوحده، بالمقاس الل�
 
 # الشريط البرتقالي العريض
 BAND_KICKER = ('طريقة الشغل', 'How it works')
-BAND_LINE = ('كل مشروع بيبدأ بفهم البراند، وبينتهي بنظام بصري متماسك.',
-             'Every project starts with the brand, and ends with a visual '
-             'system that holds.')
+# <em> = الكلمات اللي بتتلون وبتتكتب بخط مختلف على الكمبيوتر (على الموبايل شكلها عادي)
+BAND_LINE = ('كل مشروع بيبدأ بفهم <em>البراند</em>، وبينتهي <em>بنظام بصري</em> متماسك.',
+             'Every project starts with <em>the brand</em>, and ends with a <em>visual '
+             'system</em> that holds.')
 
 # ----------------------------------------------------------------- عني
 ABOUT_HEAD = ('عني', 'About')
@@ -237,6 +238,13 @@ OFFER_SKIP  = ('مش دلوقتي', 'Not now')
 OFFER_MSG   = ('أهلاً بيشوي، شفت عرض خصم ٣٠٪ لأول تعامل وحابب أعرف تفاصيله.',
                'Hi Beshoy, I saw the 30% first-project offer and would like to know more.')
 OFFER_DELAY = 3          # بعد كام ثانية يظهر
+# الموقع الجديد (_next/): العرض بيظهر كرسالة في نص الشاشة بعد كام ثانية،
+# وفيه خانتين للاسم والرقم بيتسجلوا في جوجل شيت (FORM_ENDPOINT تحت).
+OFFER_DELAY_NEW = 5
+OFFER_FORM  = ('سيب اسمك ورقمك وأنا أبعتلك التفاصيل.',
+               'Leave your name and number and I will send you the details.')
+OFFER_SEND  = ('احجز الخصم', 'Claim the offer')
+OFFER_OK    = ('تمام، وصلتني. هكلمك قريب.', 'Got it. I will be in touch soon.')
 # لو قفله وقال "مش دلوقتي" — يرجع تاني بعد كام يوم.
 # ده الشخص اللي لسه بيفكر، فمنطقي يشوف العرض تاني لما يرجع.
 OFFER_DAYS  = 3
@@ -250,7 +258,7 @@ OFFER_DAYS_ACTED = 60
 # ده لينك الـ Google Apps Script اللي بيحفظ البيانات في جوجل شيت.
 # سيبه فاضي ('') والفورم هيشتغل على الواتساب عادي.
 # خطوات تعمله في آخر HOW-TO-EDIT.md
-FORM_ENDPOINT = ''
+FORM_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwmGomTeGuQk9beoap_xhOiXf2su2xH_JC_cS_I-yfWBuomAx3IVPXU_SlZpWCif1JhnA/exec'
 
 FORM_TITLE  = ('سيب بياناتك وأنا أكلمك', 'Leave your details and I will reach out')
 FORM_NOTE   = ('أو كلمني على واتساب على طول.', 'Or message me on WhatsApp right away.')

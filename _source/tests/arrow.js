@@ -14,7 +14,7 @@ const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42
 const PAGES=[['/index.html',6],['/work.html',2],['/services/logo-design.html',1],['/work/mountain-view-club.html',2]];
 
 (async()=>{
- const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome',args:['--no-sandbox']});
+ const b=await chromium.launch(require('./browser'));
  let fails=0; const note=(ok,m)=>{if(!ok)fails++;console.log((ok?'  ok   ':'  FAIL ')+m);};
  for(const lang of ['en','ar']){
   for(const [path,floor] of PAGES){

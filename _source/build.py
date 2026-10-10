@@ -175,7 +175,7 @@ def head(title, desc, canon, og, extra='', schema=''):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://mir-s3-cdn-cf.behance.net" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;800;900&family=Space+Mono:wght@400;700&family=Aref+Ruqaa:wght@700&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{R}}css/style.css">
 <script>
 /* set the language before first paint, so an English visitor never sees
@@ -310,6 +310,7 @@ def footer():
 
     return f'''
 <footer class="foot">
+  <p class="ft-big up" aria-hidden="true">{bi(C.NAME[0], C.NAME[1])}</p>
   <div class="wrap foot-in">
     <span>© <span id="yr"></span> {C.NAME[1]} — {C.CITY[1]}</span>
     <div class="foot-l">{FOOT_SOCIAL}</div>
@@ -717,11 +718,65 @@ SVC = C.SERVICES
 DLV = C.DELIVER
 
 
+
+# A hand-drawn pen stroke under the headline's accent word. Desktop only; it
+# draws itself once the headline has risen (style.css: .swoosh).
+SWOOSH = ('<svg class="swoosh" viewBox="0 0 320 64" preserveAspectRatio="none" aria-hidden="true">'
+          '<path pathLength="1" d="M8 40C70 31 142 25 214 28c46 2 92 9 96 17 4 9-43 13-95 12'
+          'C160 56 110 51 92 46"/></svg>')
+
+
+def words(ar, en):
+    """A line split into whole words for a staggered reveal; an <em>...</em>
+    run stays one unit. Never letters: splitting Arabic into letters breaks
+    the joins between them. On a phone the spans are plain inline text."""
+    import re
+    tok = re.compile(r'<em>.*?</em>[^\s]*|\S+')
+    w = lambda s: ' '.join('<span class="w" style="--i:%d">%s</span>' % (i, x)
+                           for i, x in enumerate(tok.findall(s)))
+    return bi(w(ar), w(en))
+
+
+# The desktop work collage: real projects scattered at different sizes, each
+# drifting at its own speed on scroll (site.js). Positions are a fixed
+# choreography in container units, so the layout scales with the column and
+# mirrors itself in Arabic through inset-inline-start.
+CLG = [  # inline-start %, top (cqw), width %, scroll speed
+    (0, 0, 30, .88), (36, 7, 21, .66), (66, 0, 27, 1.14),
+    (4, 27, 23, 1.1), (34, 37, 31, .82), (73, 40, 21, .7),
+    (14, 58, 25, 1.18),
+]
+# where the line of copy sits inside the collage (inline-start %, top cqw)
+CLG_QUOTE = (50, 74)
+
+
+def collage():
+    items, bottom = [], 0
+    for (x, y, w, sp), p in zip(CLG, P):
+        m = next((m for m in p['mods'] if .7 <= m['r'] <= 1.8), p['mods'][0])
+        mw, mh = dims(m, 1400)
+        bottom = max(bottom, y + w / m['r'] + 5)
+        car, cen = CATS[p['cat']]
+        items.append(
+            f'<a class="clg-i" href="work/{p["slug"]}.html" style="--x:{x};--y:{y};--w:{w};--s:{sp}" data-cur="VIEW">'
+            f'<span class="clg-m" style="aspect-ratio:{mw}/{mh}"><img src="{url(m)}" '
+            f'srcset="{srcset(m, min(m["w"], 1400))}" sizes="(min-width: 861px) 34vw, 1px" alt="{e(p["en"])}" '
+            f'width="{mw}" height="{mh}" loading="lazy" decoding="async"></span>'
+            f'<span class="clg-c"><b>{bi(p["ar"], p["en"])}</b><span>{bi(car, cen)} · {p["year"]}</span></span></a>')
+    # one line of his own copy set among the pictures, as the reference sets its quotes
+    qa, qe = (x.split('.')[1].strip() + '.' for x in C.HERO_INTRO)
+    qx, qy = CLG_QUOTE
+    items.append(f'<p class="clg-q" style="--x:{qx};--y:{qy};--s:.92">{bi(qa, qe)}</p>')
+    bottom = max(bottom, qy + 12)
+    return f'<div class="clg" style="--h:{bottom:.1f}">{"".join(items)}</div>'
+
+
 def home():
     hero = ''.join(
         '<span class="%s">%s</span>' % (lang, ''.join(
             '<span class="ln"><span>%s</span></span>' % ln for ln in lines))
         for lang, lines in (('ar', C.HERO_AR), ('en', C.HERO_EN)))
+    hero = hero.replace('</em>', SWOOSH + '</em>')
 
     # One group of stats is only ~700px wide. The strip animates by -50%,
     # so each half has to be wider than the widest screen or a bare gap
@@ -878,6 +933,7 @@ def home():
       <p class="note">{bi(*C.WORK_NOTE)}</p>
     </div>
     <div class="rows">{''.join(rows)}</div>
+    {collage()}
     <p style="margin-top:clamp(26px,3.4vw,44px)"><a class="ln-a" href="work.html">{bi(*C.WORK_ALL)}{ARROW}</a></p>
   </div>
 </section>
@@ -885,7 +941,7 @@ def home():
 <section class="say">
   <div class="wrap">
     <p class="k">{bi(*C.BAND_KICKER)}</p>
-    <h2>{bi(*C.BAND_LINE)}</h2>
+    <h2 class="up">{words(*C.BAND_LINE)}</h2>
   </div>
 </section>
 

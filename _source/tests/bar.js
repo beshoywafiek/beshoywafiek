@@ -19,7 +19,7 @@ const where = p => p.evaluate(()=>{
   return m?{x:Math.round(r.left+(sx/m)/cv.width*r.width), y:Math.round(r.top+(sy/m)/cv.height*r.height)}:null;});
 
 (async()=>{
- const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome',args:['--no-sandbox']});
+ const b=await chromium.launch(require('./browser'));
  let fails=0; const note=(ok,m)=>{if(!ok)fails++;console.log((ok?'  ok   ':'  FAIL ')+m);};
  const ctx=await b.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
  const p=await ctx.newPage();

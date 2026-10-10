@@ -53,7 +53,13 @@
      The observer watches the container, never an element that clip-path has
      collapsed to zero height — a clipped element reports ratio 0 forever and
      the card stays blank. That bug cost an afternoon; see .rv in the CSS. */
-  var targets = document.querySelectorAll('.up, .rv, .mega');
+  /* Section heads rise only on a desktop (style.css: .reveal-heads). They are
+     not even observed on a phone: observing them there shifted the phone's
+     text rendering by a sub-pixel, and the phone is kept exactly as it was.
+     A page opened narrow and widened later simply shows its heads. */
+  var wideHeads = matchMedia('(min-width: 861px)').matches;
+  if (wideHeads) document.documentElement.classList.add('reveal-heads');
+  var targets = document.querySelectorAll(wideHeads ? '.up, .rv, .mega, .shead' : '.up, .rv, .mega');
   if ('IntersectionObserver' in window && targets.length) {
     var io = new IntersectionObserver(function (es) {
       es.forEach(function (e) {
@@ -794,6 +800,11 @@
 
   form.addEventListener('submit', function (ev) {
     ev.preventDefault();
+    // a fresh attempt starts clean: no leftover error, no leftover button
+    msg.className = 'lead-msg';
+    msg.textContent = '';
+    var oldWa = form.querySelector('.lead-wa');
+    if (oldWa) oldWa.parentNode.removeChild(oldWa);
     var data = {};
     Array.prototype.forEach.call(form.querySelectorAll('input'), function (i) {
       data[i.name] = i.value.trim();
@@ -850,7 +861,21 @@
       btn.removeAttribute('aria-busy');
       msg.className = 'lead-msg ' + (ok ? 'ok' : 'bad');
       msg.textContent = ok ? t('ok') : t('err');
-      if (ok) form.classList.add('sent'); else toWhatsApp();
+      if (ok) form.classList.add('sent'); else waButton();
+    }
+
+    // When the send fails the browser would block a WhatsApp window opened
+    // from here (it is no longer a direct click), so the same message is
+    // offered as a button — a copy of the page's WhatsApp button.
+    function waButton() {
+      var line = data.name + ' — ' + data.phone + (data.needs ? ' — ' + data.needs : '');
+      var base = waHref ? waHref.href.split('?text=')[0] : 'https://wa.me/201273874839';
+      var a = waHref ? waHref.cloneNode(true) : document.createElement('a');
+      a.removeAttribute('id');
+      a.className = (waHref ? waHref.className + ' ' : 'btn ') + 'lead-wa';
+      a.href = base + '?text=' + encodeURIComponent(line);
+      a.target = '_blank'; a.rel = 'noopener';
+      msg.parentNode.insertBefore(a, msg.nextSibling);
     }
 
     var guard = setTimeout(function () { finish(false); }, 9000);
@@ -1007,4 +1032,42 @@
   document.addEventListener('click', function (e) { if (!d.contains(e.target)) close(0); });
   // following a link inside should not leave the panel hanging open
   panel.addEventListener('click', function () { close(0); });
+})();
+
+/* ===== desktop collage: each piece drifts at its own speed =====
+   Desktop only, and only while the collage is on screen. Each item's resting
+   centre is measured once (and again on a real resize) — never inside the
+   scroll frame — and the frame only writes transforms. */
+(function () {
+  var box = document.querySelector('.clg');
+  if (!box || !('IntersectionObserver' in window)) return;
+  var wide = matchMedia('(min-width: 861px)');
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) return;
+  var items = [].slice.call(box.querySelectorAll('.clg-i, .clg-q')), rest = [], on = false, raf = 0, lastW = 0;
+  function measure() {
+    lastW = innerWidth;
+    items.forEach(function (el) { el.style.transform = ''; });
+    rest = items.map(function (el) {
+      var r = el.getBoundingClientRect();
+      return { c: r.top + scrollY + r.height / 2, s: parseFloat(el.style.getPropertyValue('--s')) || 1 };
+    });
+  }
+  function frame() {
+    raf = 0;
+    var mid = scrollY + innerHeight / 2;
+    for (var i = 0; i < items.length; i++) {
+      var d = (mid - rest[i].c) * (rest[i].s - 1) * 0.3;
+      items[i].style.transform = 'translate3d(0,' + d.toFixed(1) + 'px,0)';
+    }
+  }
+  function onScroll() { if (on && !raf) raf = requestAnimationFrame(frame); }
+  new IntersectionObserver(function (es) {
+    on = es[0].isIntersecting && wide.matches;
+    if (on) { if (!rest.length) measure(); onScroll(); }
+  }, { rootMargin: '20% 0px' }).observe(box);
+  addEventListener('scroll', onScroll, { passive: true });
+  // the address bar changes height with the same width; only a real width change re-measures
+  addEventListener('resize', function () { if (innerWidth !== lastW && rest.length) { measure(); onScroll(); } });
+  addEventListener('load', function () { if (rest.length) { measure(); onScroll(); } });
 })();

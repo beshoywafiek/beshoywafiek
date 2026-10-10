@@ -476,7 +476,7 @@ html[lang="ar"] .svl-t{letter-spacing:0;line-height:1.4;}
 /* ===================== the thinking behind a project ===================== */
 .cs-st{padding:0 0 clamp(26px,4vw,52px);}
 .cs-st-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:1px;
-  background:var(--rule);border:1px solid var(--rule);margin:0;}
+  margin:0;}
 .cs-st-c{background:var(--bg);padding:clamp(20px,2.6vw,30px);
   transition:background .4s var(--ease);}
 .cs-st-c:hover{background:#121010;}
@@ -491,7 +491,7 @@ html[lang="ar"] .cs-st-c dd{line-height:2;}
    are set differently: bigger, lighter, with the mark itself doing the
    decoration rather than a box. */
 .pf{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:1px;
-  background:var(--rule);border:1px solid var(--rule);}
+  }
 .pf-c{background:var(--bg);padding:clamp(26px,3.2vw,40px);margin:0;
   display:flex;flex-direction:column;gap:clamp(18px,2.4vw,26px);
   transition:background .4s var(--ease);position:relative;}
@@ -524,15 +524,29 @@ html[lang="ar"] .pf-c blockquote{line-height:1.9;}
 html[lang="ar"] .me-lead{letter-spacing:0;line-height:1.6;}
 .me-copy>p{color:var(--mut);font-size:15.5px;line-height:1.9;max-width:56ch;margin-bottom:16px;}
 .me-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1px;
-  background:var(--rule);border:1px solid var(--rule);margin-top:clamp(22px,3vw,38px);}
+  margin-top:clamp(22px,3vw,38px);}
 .me-facts>div{background:var(--bg);padding:18px 20px;}
 .me-facts dt{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.18em;
   text-transform:uppercase;color:var(--dim);margin-bottom:7px;}
 .me-facts dd{font-size:14.5px;font-weight:600;}
 
+/* The 1px-gap grids draw their hairlines on the CARDS (a 1px solid shadow
+   over the gap), not as the grid's grey background showing through it. As a
+   background, every row the cards did not fill — 6 deliverables in 4 columns
+   on a service page, 4 facts in 3 at tablet width — showed as a solid grey
+   slab. The colour is --rule flattened onto --bg, so two shadows meeting in
+   one gap do not add up to a brighter line. */
+.cs-st-g>*,.pf>*,.me-facts>*,.dv>*,.cs-meta>*,.inc>*,.steps>*{box-shadow:0 0 0 1px #2C2A2A;}
+/* the old container border keeps its 1px of space, now transparent: the
+   cards' shadows draw the line exactly where it was, and nothing below moves */
+/* and the outer edge keeps its old, slightly brighter line: it used to be a
+   translucent border painted over the grey background, so it read lighter
+   than the lines between cards. An outline paints over the cards' shadows. */
+.cs-st-g,.pf,.me-facts,.dv,.cs-meta,.inc,.steps{border:1px solid transparent;outline:1px solid #3C3B3B;outline-offset:-1px;}
+
 /* ===================== what you get ===================== */
 .dv{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;
-  background:var(--rule);border:1px solid var(--rule);}
+  }
 .dv-c{background:var(--bg);padding:clamp(22px,2.6vw,34px);display:flex;flex-direction:column;gap:12px;
   transition:background .4s var(--ease);}
 .dv-c:hover{background:#121010;}
@@ -694,7 +708,7 @@ html[lang="ar"] .end h2{letter-spacing:-.01em;line-height:1.25;}
 html[lang="ar"] .cs-h1{letter-spacing:-.01em;line-height:1.14;}
 .cs-lead{color:var(--mut);font-size:clamp(16px,1.35vw,21px);line-height:1.85;max-width:56ch;}
 .cs-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;
-  background:var(--rule);border:1px solid var(--rule);margin:clamp(30px,4.6vw,58px) 0 clamp(26px,4vw,50px);}
+  margin:clamp(30px,4.6vw,58px) 0 clamp(26px,4vw,50px);}
 .cs-meta>div{background:var(--bg);padding:16px 18px;}
 .cs-meta dt{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.18em;
   text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
@@ -1083,13 +1097,14 @@ html[dir="rtl"] .hero-veil{background:
 .lead-msg{margin-top:14px;font-size:14.5px;line-height:1.7;min-height:1px;}
 .lead-msg.ok{color:#2ecc71;}
 .lead-msg.bad{color:#ff7a5c;}
+.lead-wa{margin-top:12px;}   /* only appears when a send fails */
 .lead.sent .lead-grid,.lead.sent .lead-act{display:none;}
 
 /* ===================== service pages ===================== */
 .svc-num{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.2em;
   color:var(--orange);margin-top:clamp(16px,2.4vw,26px);}
 .inc{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-  gap:1px;background:var(--rule);border:1px solid var(--rule);}
+  gap:1px;}
 .inc li{background:var(--bg);padding:clamp(16px,2.2vw,22px) clamp(18px,2.4vw,26px);
   font-size:15.5px;line-height:1.7;display:flex;gap:12px;align-items:flex-start;
   transition:background .35s var(--ease);}
@@ -1098,7 +1113,7 @@ html[dir="rtl"] .hero-veil{background:
   background:var(--orange);}
 
 .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1px;
-  background:var(--rule);border:1px solid var(--rule);}
+  }
 .step{background:var(--bg);padding:clamp(20px,2.6vw,30px);display:flex;flex-direction:column;gap:10px;
   transition:background .35s var(--ease);}
 .step:hover{background:#121010;}
@@ -1250,3 +1265,148 @@ html[lang="ar"] .nf-h{letter-spacing:-.01em;line-height:1.3;}
 .nf-a{display:flex;align-items:center;gap:clamp(16px,2.4vw,28px);flex-wrap:wrap;
   margin-top:clamp(26px,4vw,44px);}
 @media (max-width:620px){.nf-a .btn{width:100%;justify-content:center;}}
+
+/* =========================================================
+   Desktop, bold — Lando Norris register in this site's colours.
+   The phone keeps the current site exactly (mobcmp.js checks it), so the
+   only rules outside the min-width query below are the ones that keep the
+   new markup invisible or neutral on a phone.
+   ========================================================= */
+.swoosh,.clg{display:none;}
+.say h2 em{font-style:normal;}
+.say h2.up{opacity:1;transform:none;}   /* on a phone the band does not animate, as before */
+
+@media (min-width:861px){
+  /* ---- the headline: a pen stroke draws itself under the accent word.
+     In Arabic the path is mirrored, so it is written right to left. */
+  .mega em{position:relative;display:inline-block;}
+  .swoosh{display:block;position:absolute;inset-inline:-6% -4%;bottom:-.16em;height:.34em;width:110%;
+    overflow:visible;pointer-events:none;}
+  html[dir="rtl"] .swoosh{transform:scaleX(-1);}
+  .swoosh path{fill:none;stroke:var(--orange);stroke-width:7;stroke-linecap:round;stroke-linejoin:round;
+    vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:1;}
+  .js .mega.in .swoosh path{transition:stroke-dashoffset 1.3s cubic-bezier(.65,0,.35,1) 1.05s;stroke-dashoffset:0;}
+  .no-js .swoosh path{stroke-dashoffset:0;}
+
+  /* ---- the statement becomes a manifesto: a light page, type at full
+     width, the key words in orange and in a second, hand-made face —
+     Ruqaa for Arabic, a cut italic serif for English */
+  .say{background:var(--ink);color:var(--bg);padding:clamp(130px,15vw,240px) 0;text-align:center;position:relative;overflow:hidden;}
+  .say::before{content:'';position:absolute;inset:-20% -10%;pointer-events:none;opacity:.55;
+    background:repeating-radial-gradient(ellipse at 18% 30%,transparent 0 46px,rgba(11,10,10,.07) 47px 48px),
+               repeating-radial-gradient(ellipse at 86% 78%,transparent 0 58px,rgba(11,10,10,.06) 59px 60px);}
+  .say .wrap{position:relative;}
+  .say p.k{display:none;}
+  .say h2{max-width:none;margin:0 auto;font-size:clamp(54px,6.4vw,118px);line-height:1.02;letter-spacing:-.035em;
+    text-transform:uppercase;}
+  html[lang="ar"] .say h2{line-height:1.32;letter-spacing:0;text-transform:none;font-size:clamp(50px,5.8vw,108px);}
+  .say h2 em{color:var(--orange);font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;
+    text-transform:none;letter-spacing:-.01em;font-size:1.06em;}
+  html[lang="ar"] .say h2 em{font-family:'Aref Ruqaa',serif;font-style:normal;font-weight:700;font-size:1em;letter-spacing:0;}
+  .js .say .w{display:inline-block;opacity:.12;transition:opacity .7s var(--ease);transition-delay:calc(var(--i) * 70ms);}
+  .js .say h2.in .w{opacity:1;}
+  .js .say h2.up{opacity:1;transform:none;}
+
+  /* ---- the work as a scattered collage; the list stays for phones */
+  #work .rows{display:none;}
+  .clg{display:block;position:relative;container-type:inline-size;height:auto;}
+  .clg::after{content:'';display:block;height:calc(var(--h) * 1cqw);}
+  .clg-i{position:absolute;inset-inline-start:calc(var(--x) * 1%);top:calc(var(--y) * 1cqw);width:calc(var(--w) * 1%);
+    display:flex;flex-direction:column;gap:10px;will-change:transform;}
+  .clg-m{display:block;overflow:hidden;border-radius:3px;background:#161414;}
+  .clg-m img{width:100%;height:100%;object-fit:cover;transition:transform 1s var(--ease),filter .6s var(--ease);}
+  .clg-i:hover .clg-m img{transform:scale(1.04);}
+  .clg-c{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:13px;color:var(--mut);}
+  .clg-c b{font-weight:800;font-size:15px;color:var(--ink);transition:color .3s;}
+  .clg-i:hover .clg-c b{color:var(--orange);}
+  .clg-c>span{white-space:nowrap;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;}
+  html[lang="ar"] .clg-c>span{font-family:var(--sans);letter-spacing:0;text-transform:none;font-size:12.5px;}
+  .clg-q{position:absolute;inset-inline-start:calc(var(--x) * 1%);top:calc(var(--y) * 1cqw);width:44%;margin:0;
+    font-family:'Instrument Serif',serif;font-style:italic;font-size:3.4cqw;line-height:1.12;color:var(--orange);will-change:transform;}
+  html[lang="ar"] .clg-q{font-family:'Aref Ruqaa',serif;font-style:normal;font-weight:700;font-size:3cqw;line-height:1.5;}
+}
+@media (min-width:861px) and (prefers-reduced-motion:reduce){
+  .swoosh path{stroke-dashoffset:0;transition:none !important;}
+  .js .say .w{opacity:1;transition:none;}
+}
+
+/* ---- desktop, part two: every section speaks at the same volume ---- */
+.ft-big{display:none;}
+@media (min-width:861px){
+  /* section heads: giant, and they rise out of their own line once */
+  .shead{align-items:flex-end;padding-bottom:clamp(26px,2.6vw,40px);}
+  .shead-l{align-items:flex-start;gap:clamp(14px,1.4vw,22px);}
+  .shead h2{font-size:clamp(58px,7.2vw,132px);line-height:.98;letter-spacing:-.045em;}
+  html[lang="ar"] .shead h2{line-height:1.25;letter-spacing:0;}
+  .shead .idx{font-size:13px;padding-top:.9em;}
+  .shead .note{font-size:15.5px;max-width:34ch;line-height:1.8;}
+  .reveal-heads .shead h2{clip-path:inset(-10% -5% 100% -5%);transform:translate3d(0,.32em,0);
+    transition:clip-path 1.1s var(--ease),transform 1.1s var(--ease);}
+  .reveal-heads .shead.in h2{clip-path:inset(-10% -5% -30% -5%);transform:none;}
+
+  /* services: the names at poster size; open shows the work wide */
+  .svl-h{padding:clamp(28px,2.6vw,42px) 0;gap:clamp(18px,2.2vw,36px);}
+  .svl-t{font-size:clamp(44px,5.6vw,104px);line-height:1.02;letter-spacing:-.04em;}
+  html[lang="ar"] .svl-t{line-height:1.3;}
+  .svl-i{width:58px;height:58px;}
+  .svl-pr{font-size:clamp(16px,1.3vw,20px);color:var(--ink);}
+  .svl-x{width:26px;height:26px;}
+
+  /* about: a light page, like the manifesto, so the dark sections breathe */
+  #about{background:var(--ink);color:var(--bg);}
+  #about .shead{border-color:rgba(11,10,10,.16);}
+  #about .idx{color:var(--red);}
+  #about .me{grid-template-columns:minmax(300px,.85fr) 1.15fr;align-items:center;gap:clamp(40px,6vw,110px);}
+  #about .me-ph::before{border-color:var(--orange);}
+  #about .me-ph img{border-color:rgba(11,10,10,.12);}
+  #about .me-copy>.me-lead{font-size:clamp(30px,3.3vw,56px);line-height:1.18;letter-spacing:-.03em;max-width:20ch;color:var(--bg);}
+  html[lang="ar"] #about .me-copy>.me-lead{line-height:1.45;letter-spacing:0;}
+  #about .me-copy>p{color:#4A4642;font-size:17px;}
+  #about .me-facts{outline-color:rgba(11,10,10,.22);grid-template-columns:1fr 1fr;}
+  #about .me-facts>*{background:var(--ink);box-shadow:0 0 0 1px #D2CECA;}
+  #about .me-facts dt{color:#6B6560;}
+
+  /* what you get: four big cards that lift and light their top edge */
+  .dv-c{padding:clamp(30px,2.8vw,46px);gap:16px;position:relative;
+    transition:background .4s var(--ease),transform .5s var(--ease);}
+  .dv-c::before{content:'';position:absolute;inset-inline:0;top:0;height:3px;background:var(--orange);
+    transform:scaleX(0);transform-origin:left center;transition:transform .6s var(--ease);}
+  html[dir="rtl"] .dv-c::before{transform-origin:right center;}
+  .dv-c:hover{transform:translateY(-6px);}
+  .dv-c:hover::before{transform:scaleX(1);}
+  .dv-c svg{width:58px;height:58px;}
+  .dv-c h3{font-size:clamp(20px,1.7vw,26px);}
+  .dv-c p{font-size:15px;}
+
+  /* questions: the heading holds its place while the answers scroll past */
+  #faq .wrap{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(40px,6vw,120px);align-items:start;}
+  #faq .shead{position:sticky;top:110px;border-bottom:0;margin-bottom:0;}
+  #faq .qas{border-top:1px solid var(--rule);}
+  .qa summary h3{font-size:clamp(20px,1.7vw,27px);}
+
+  /* contact: the closing line at full size, its accent in the second face */
+  .end h2{font-size:clamp(66px,9.4vw,176px);line-height:.98;letter-spacing:-.05em;}
+  html[lang="ar"] .end h2{line-height:1.28;letter-spacing:0;}
+  .end h2 em{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;letter-spacing:-.015em;}
+  html[lang="ar"] .end h2 em{font-family:'Aref Ruqaa',serif;font-style:normal;font-weight:700;letter-spacing:0;}
+
+  /* the name, once more, across the whole width at the very end */
+  /* clipped sideways only: clipping the bottom too took the dots off the
+     final ي and read as a different name */
+  .ft-big{display:block;margin:0;padding:clamp(40px,5vw,90px) var(--pad) clamp(18px,2vw,34px);
+    font-weight:900;font-size:13.6vw;line-height:.9;letter-spacing:-.055em;white-space:nowrap;
+    overflow-x:clip;overflow-y:visible;color:var(--ink);text-align:center;}
+  html[lang="ar"] .ft-big{font-size:14.5vw;line-height:1.4;letter-spacing:0;padding-bottom:clamp(30px,3.2vw,56px);}
+  .ft-big.up{transform:translate3d(0,8%,0);}
+  .ft-big.up.in{transform:none;}
+
+  /* work index and project pages: the same giant voice */
+  .cs-h1{font-size:clamp(64px,10.4vw,196px);line-height:.95;letter-spacing:-.05em;}
+  html[lang="ar"] .cs-h1{line-height:1.2;letter-spacing:0;}
+  .cs-lead{font-size:clamp(18px,1.5vw,24px);}
+  .tile-t{font-size:clamp(18px,1.6vw,24px);}
+  .cs-st-g dd{font-size:clamp(16px,1.2vw,19px);line-height:1.85;}
+}
+@media (min-width:861px) and (prefers-reduced-motion:reduce){
+  .reveal-heads .shead h2{clip-path:none;transform:none;transition:none;}
+}
