@@ -90,6 +90,8 @@ and excluded in `_config.yml`; `links.js` skips it). It reuses `content.py`,
 `build.py`, `src/` and review tools — see `_next/README.md`. Nothing in it
 touches the live site. Until he approves it, the rules above still govern the
 root; the same performance, RTL and content rules apply inside `_next/`.
+Its project images are self-hosted in `_next/media/` (see the README there);
+open item 3 below applies to the live site only.
 
 ---
 

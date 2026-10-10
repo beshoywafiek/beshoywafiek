@@ -454,6 +454,12 @@
   var lb = $('#lb');
   if (lb) {
     var items = $$('.gi'), at = 0, lbImg = $('img', lb), lbC = $('.lb-c', lb), opener = null;
+    // the large size comes from Behance; if Behance fails, the site's own
+    // copy of the normal size takes its place
+    lbImg.addEventListener('error', function () {
+      var fb = items[at] && items[at].getAttribute('data-fb');
+      if (fb && lbImg.getAttribute('src') !== fb) lbImg.src = fb;
+    });
     function show(i) {
       at = (i + items.length) % items.length;
       lbImg.src = items[at].getAttribute('data-hi');

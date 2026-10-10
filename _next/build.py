@@ -61,14 +61,28 @@ def seo(text):
     return text.replace('{an}', str(N).translate(AR_DIGITS)).replace('{n}', str(N))
 
 
+# Project images are served from the site itself (media/work/<slug>/), not
+# hotlinked from Behance: the same files, downloaded and verified, so the
+# portfolio cannot go blank if Behance blocks hotlinking or a project is
+# re-uploaded there. Only the very large viewer size ('hi') stays on Behance,
+# with the local normal size as its fallback. '@@MEDIA@@' becomes the page's
+# relative path to media/ in page().
+MEDIA = os.path.join(HERE, 'media')
+SLUG_OF = {m['f']: p['slug'] for p in P for m in p['mods']}
+USED_MEDIA = set()
+
+
 def img(m, size='1400'):
-    """A Behance module URL. 'sm' is the 632px-tall variant, which exists for
-    every module (measured on the live site)."""
-    if size == 'sm':
-        return CDN + 'max_632_webp/' + m['f']
+    """The URL of a project image. 'sm' is the 632px-tall thumbnail, '1400'
+    the normal size (both local), 'hi' the viewer size on Behance, 'cdn' the
+    normal size on Behance (only for og:image, which needs an absolute URL)."""
     if size == 'hi':
         return CDN + m['hi'] + '/' + m['f']
-    return CDN + m['v'] + '/' + m['f']
+    if size == 'cdn':
+        return CDN + m['v'] + '/' + m['f']
+    rel = 'work/%s/%s%s.webp' % (SLUG_OF[m['f']], 'sm/' if size == 'sm' else '', m['f'].rsplit('.', 1)[0])
+    USED_MEDIA.add(rel)
+    return '@@MEDIA@@' + rel
 
 
 def wh(m, cap=1400):
@@ -292,11 +306,12 @@ def offer():
 
 
 def page(body_cls, title, desc, path, main, R='', og=None, cur=''):
-    return (head(title, desc, path, og, R) +
+    html_ = (head(title, desc, path, og, R) +
             '<body class="%s">\n' % body_cls + header(R, cur) +
             '<main id="main">\n' + main + '\n</main>\n' + footer(R) + offer() +
             '<div class="cur" aria-hidden="true"><span class="cur-l">%s</span></div>\n' % bi('شوف', 'View') +
             '<script src="%sjs/site.js" defer></script>\n</body>\n</html>\n' % R)
+    return html_.replace('@@MEDIA@@', R + 'media/')
 
 
 # ---------------------------------------------------------------- blocks
@@ -701,8 +716,8 @@ def gallery(mods, name):
                 grp = run[k:k + n + 1]            # never strand one
             cls = 'g%d' % min(len(grp), 4)
             out.append('<div class="gr %s %s">%s</div>' % (cls, f, ''.join(
-                '<a class="gi rv" href="%s" data-hi="%s" data-cur style="--ar:%.4f">%s</a>'
-                % (img(m, 'hi'), img(m, 'hi'), m['r'],
+                '<a class="gi rv" href="%s" data-hi="%s" data-fb="%s" data-cur style="--ar:%.4f">%s</a>'
+                % (img(m, 'hi'), img(m, 'hi'), img(m), m['r'],
                    picture(m, alt='%s — %s' % (name, C.NAME[1]),
                            sizes='100vw' if len(grp) == 1 else '(min-width:861px) %dvw, 100vw' % (100 // len(grp))))
                 for m in grp)))
@@ -760,7 +775,7 @@ def case(p, i, prev, nxt):
 '''
     title = '%s — %s | %s — %s' % (p['ar'], C.NAME[0], p['en'], C.NAME[1])
     return page('pg-case', title, '%s %s' % (p['arl'], p['enl']), 'work/%s.html' % p['slug'],
-                main, R='../', og=img(m), cur='work')
+                main, R='../', og=img(m, 'cdn'), cur='work')
 
 
 # ---------------------------------------------------------------- service
@@ -845,6 +860,7 @@ def notfound():
     h = h.replace('src="images/logo.png"', 'src="%s"' % data_uri(os.path.join(img_dir, 'logo.png'), 'image/png'))
     # every remaining link inside the site waits for the root to be known
     h = re.sub(r'href="((?!https?:|mailto:|tel:|#|data:|/)[^"]+)"', r'href="/\1" data-rel="\1"', h)
+    h = re.sub(r'src="(media/[^"]+)"', r'src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-rel="\1"', h)
     h = h.replace('</head>', ROOT_FINDER + '\n</head>', 1)
     assert 'css/style.css' not in h and 'js/site.js' not in h and 'images/' not in h.replace(SITE + 'images/', '')
     return h
@@ -867,6 +883,7 @@ def main():
     os.makedirs(os.path.join(OUT, 'js'))
     shutil.copy(os.path.join(SRC, 'style.css'), os.path.join(OUT, 'css', 'style.css'))
     shutil.copy(os.path.join(SRC, 'site.js'), os.path.join(OUT, 'js', 'site.js'))
+    shutil.copytree(MEDIA, os.path.join(OUT, 'media'))
     write('index.html', home())
     write('work.html', work_index())
     write('about.html', about_page())
@@ -878,6 +895,9 @@ def main():
     for s in C.SERVICES:
         write('services/%s.html' % C.SERVICE_PAGES[s[0]]['slug'], service(s))
     write('404.html', notfound())
+    missing = sorted(r for r in USED_MEDIA if not os.path.exists(os.path.join(MEDIA, r)))
+    if missing:
+        sys.exit('missing local images (%d): %s' % (len(missing), ', '.join(missing[:5])))
     print('built _next/site: 6 main pages, %d case studies, %d service pages, 404' % (N, len(C.SERVICES)))
 
 
